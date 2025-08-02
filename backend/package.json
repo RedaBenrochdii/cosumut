@@ -1,0 +1,37 @@
+{
+  "name": "cosumutuel-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "merge": "node mergeDossiers.js",
+    "watch": "chokidar \"./backend/bordereaux/*.json\" -c \"node mergeDossiers.js\"",
+    "start": "npm-run-all --parallel watch dev"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "fs-extra": "^11.3.0",
+    "image-hash": "^5.3.2",
+    "mssql": "^11.0.1",
+    "multer": "^1.4.5-lts.1",
+    "pkg": "^5.8.1",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "node-cron": "^3.0.2",
+    "nodemon": "^2.0.22",
+    "npm-run-all": "^4.1.5"
+  },
+  "bin": "server.js",
+  "pkg": {
+    "scripts": [
+      "server.js"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
+  }
+}

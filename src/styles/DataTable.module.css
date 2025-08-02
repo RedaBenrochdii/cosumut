@@ -1,0 +1,127 @@
+/* ===================== */
+/* 📦 Conteneur principal */
+/* ===================== */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: 'Arial', sans-serif;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.container h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 32px;
+  color: #2d3748;
+}
+
+/* ====================== */
+/* 📊 Tableau des données */
+/* ====================== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 16px 20px;
+  font-size: 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  color: #4a5568;
+}
+
+.table th {
+  background-color: #f7fafc;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2d3748;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* =================== */
+/* 📌 Pagination boutons */
+/* =================== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  gap: 16px;
+}
+
+.pagination button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.pagination button:hover {
+  background-color: #2b6cb0;
+  transform: translateY(-2px);
+}
+
+/* ======================= */
+/* ❌ Bouton Supprimer Tout */
+/* ======================= */
+.deleteAllButton {
+  display: block;
+  margin: 30px auto 0;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.deleteAllButton:hover {
+  background-color: #c53030;
+  transform: translateY(-2px);
+}
+
+/* ==================== */
+/* ⚙️ Actions générales */
+/* ==================== */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.actions button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.actions button:hover {
+  background-color: #2d3748;
+  transform: translateY(-2px);
+}

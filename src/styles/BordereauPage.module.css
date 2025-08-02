@@ -1,0 +1,480 @@
+/* BordereauPage.module.css - Version complète et améliorée */
+
+/* ========================================================= */
+/* Variables & Styles de base              */
+/* ========================================================= */
+
+:root {
+  --primary-blue: #0056b3;
+  --dark-blue: #003366;
+  --accent-yellow: #FFD700;
+  --light-gray: #f4f7f6;
+  --medium-gray: #e0e0e0;
+  --dark-gray: #333;
+  --white: #fff;
+  --text-color-light: #333;
+  --text-color-dark: #e0e0e0;
+  --card-bg-light: #fff;
+  --card-bg-dark: #2c2c2c;
+  --border-light: #ddd;
+  --border-dark: #444;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-dark: rgba(0, 0, 0, 0.4);
+}
+
+/* Styles pour le mode sombre (basés sur body.dark-mode) */
+body.dark-mode .container {
+  background-color: var(--dark-blue);
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .card {
+  background-color: var(--card-bg-dark);
+  box-shadow: 0 4px 15px var(--shadow-dark);
+  border: 1px solid var(--border-dark);
+}
+
+body.dark-mode .card legend {
+  color: var(--accent-yellow);
+}
+
+body.dark-mode .inputField {
+  background-color: #3a3a3a;
+  border-color: var(--border-dark);
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .inputField::placeholder {
+  color: #bbb;
+}
+
+body.dark-mode .table th {
+  background-color: #4a4a4a;
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .table tbody tr {
+  background-color: #3a3a3a;
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .table tbody tr:hover {
+  background-color: #4a4a4a;
+}
+
+body.dark-mode .table td {
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .note {
+  color: #bbb;
+}
+
+body.dark-mode .subtitle {
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .paginationButton {
+  background-color: #3a3a3a;
+  color: var(--accent-yellow);
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .paginationButton:hover {
+  background-color: #4a4a4a;
+}
+
+body.dark-mode .currentPage {
+  background-color: #4a4a4a;
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .chartSection {
+  background-color: var(--card-bg-dark);
+  box-shadow: 0 4px 15px var(--shadow-dark);
+  border: 1px solid var(--border-dark);
+}
+
+body.dark-mode .chartSection h2 {
+  color: var(--accent-yellow);
+}
+
+body.dark-mode .sectionTitle,
+body.dark-mode .subSectionTitle {
+  color: var(--accent-yellow);
+}
+
+
+/* ========================================================= */
+/* Mise en page générale                 */
+/* ========================================================= */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+  min-height: 100vh;
+  background-color: var(--light-gray);
+  color: var(--text-color-light);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2.8rem;
+  color: var(--primary-blue);
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ========================================================= */
+/* Composants UI                        */
+/* ========================================================= */
+
+.card {
+  background-color: var(--card-bg-light);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px var(--shadow-light);
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 1000px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+.card legend {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--primary-blue);
+  padding: 0 10px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.summaryContent {
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.summaryContent ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.summaryContent li {
+  margin-bottom: 5px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-color-light);
+}
+
+body.dark-mode .formGroup label {
+  color: var(--text-color-dark);
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  color: var(--text-color-light);
+  background-color: var(--white);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
+}
+
+/* ========================================================= */
+/* Boutons                              */
+/* ========================================================= */
+
+.button {
+  padding: 12px 25px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primaryButton {
+  background-color: var(--primary-blue);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3);
+}
+
+.primaryButton:hover {
+  background-color: #004085;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 86, 179, 0.4);
+}
+
+.dangerButton {
+  background-color: var(--danger-color);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.dangerButton:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+}
+
+.button:disabled {
+  background-color: var(--medium-gray);
+  color: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ========================================================= */
+/* Alertes                              */
+/* ========================================================= */
+
+.alert {
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-top: 15px;
+  text-align: center;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.alertSuccess {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alertDanger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alertWarning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+/* ========================================================= */
+/* Tableau & Pagination                 */
+/* ========================================================= */
+
+.tableContainer {
+  width: 100%;
+  max-width: 1000px;
+  margin: 20px auto;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  background-color: var(--card-bg-light);
+  box-shadow: 0 2px 6px var(--shadow-light);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  border: 1px solid var(--border-light);
+  text-align: left;
+}
+
+.table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+}
+
+.table tbody tr {
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.005);
+}
+
+.table td a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.table td a:hover {
+  text-decoration: underline;
+}
+
+/* Styles pour la pagination */
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.paginationButton {
+  padding: 8px 16px;
+  border: 1px solid var(--border-light);
+  background-color: var(--card-bg-light);
+  color: var(--primary-blue);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.paginationButton:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.paginationButton:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  background-color: #f9f9f9;
+  transform: none;
+}
+
+.currentPage {
+  font-weight: 600;
+  color: var(--dark-blue);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: var(--medium-gray);
+}
+
+
+/* ========================================================= */
+/* Graphiques                           */
+/* ========================================================= */
+
+.chartSection {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 1000px;
+  background-color: var(--card-bg-light);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px var(--shadow-light);
+  border: 1px solid var(--border-light);
+}
+
+.chartSection h2 {
+  color: var(--primary-blue);
+}
+
+/* ========================================================= */
+/* Titres de sections (nouveaux styles) */
+/* ========================================================= */
+.sectionTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--primary-blue);
+  margin-top: 30px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.subSectionTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--primary-blue);
+  margin-top: 20px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+
+/* ========================================================= */
+/* Ajustements Responsifs                    */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 10px;
+  }
+  .title {
+    font-size: 2rem;
+  }
+  .card, .chartSection {
+    padding: 20px;
+  }
+  .card legend, .sectionTitle {
+    font-size: 1.4rem;
+  }
+  .subSectionTitle {
+    font-size: 1.2rem;
+  }
+  .button {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+  .table th, .table td {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+  .inputField {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.8rem;
+  }
+  .card, .chartSection {
+    padding: 15px;
+  }
+  .card legend, .sectionTitle {
+    font-size: 1.2rem;
+  }
+  .subSectionTitle {
+    font-size: 1rem;
+  }
+  .button {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .inputField {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,59 @@
+[
+  {
+    "id": "BORD-7",
+    "filename": "bordereau_2025-08-02-16-34-36.xlsx",
+    "date": "2025-08-02T16:34:36.246Z",
+    "nbDossiers": 5,
+    "total": "0.00",
+    "rembourse": "0.00"
+  },
+  {
+    "id": "BORD-6",
+    "filename": "bordereau_2025-07-28-13-12-59.xlsx",
+    "date": "2025-07-28T13:12:59.738Z",
+    "nbDossiers": 2,
+    "total": "853.00",
+    "rembourse": "0.00"
+  },
+  {
+    "id": "BORD-5",
+    "filename": "bordereau_2025-07-28-00-34-58.xlsx",
+    "date": "2025-07-28T00:34:58.363Z",
+    "nbDossiers": 2,
+    "total": "1000.00",
+    "rembourse": "0.00"
+  },
+  {
+    "id": "BORD-4",
+    "filename": "bordereau_2025-07-28-00-33-45.xlsx",
+    "date": "2025-07-28T00:33:45.372Z",
+    "nbDossiers": 1,
+    "total": "0.00",
+    "rembourse": "0.00"
+  },
+  {
+    "id": "BORD-2",
+    "filename": "bordereau_2025-07-26-16-17-42.xlsx",
+    "date": "2025-07-26T16:17:42.849Z",
+    "nbDossiers": 2,
+    "total": "1500.15",
+    "rembourse": "1130.00"
+  },
+  {
+    "id": "BORD-1",
+    "filename": "bordereau_2025-07-26-16-15-18.xlsx",
+    "date": "2025-07-26T16:15:18.832Z",
+    "nbDossiers": 2,
+    "total": "8577.00",
+    "rembourse": "4944.00"
+  },
+  {
+    "Matricule": "EMP001",
+    "Nom_Malade": "Fatima",
+    "Prenom_Malade": "Z.",
+    "Montant": 320,
+    "Montant_Rembourse": 250,
+    "Date": "2025-07-25",
+    "Statut": "traité"
+  }
+]

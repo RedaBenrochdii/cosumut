@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+  --primary: #4fc3f7;
+  --bg: #f5f5f5;
+  --dark: #1e1e2f;
+  --radius: 0.5rem;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg);
+}
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 200px;
+}
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}

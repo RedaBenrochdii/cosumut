@@ -1,0 +1,89 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "2025-07-28",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "El Fassi",
+      "Prenom_Employe": "Youssef",
+      "Nom_Malade": "El Fassi",
+      "Prenom_Malade": "Naima",
+      "Type_Malade": "médicale",
+      "Montant": "7777",
+      "Montant_Rembourse": "",
+      "Code_Assurance": "",
+      "Numero_Declaration": "8976",
+      "Ayant_Droit": "conjoint",
+      "DateNaissance": "1985-09-30",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "Chraibi",
+          "prenom": "Naima",
+          "DateNaissance": "1888-06-10"
+        },
+        {
+          "type": "enfant",
+          "nom": "El Fassi",
+          "prenom": "Aya",
+          "DateNaissance": "2001-01-15"
+        }
+      ]
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Benali",
+      "Prenom_Employe": "Reda",
+      "Nom_Malade": "Benali",
+      "Prenom_Malade": "Adam",
+      "Type_Malade": "",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Enfants"
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Benali",
+      "Prenom_Employe": "Reda",
+      "Nom_Malade": "El Hanaoui",
+      "Prenom_Malade": "Salma",
+      "Type_Malade": "Dentaire",
+      "Montant": "999999999.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Conjoint"
+    },
+    {
+      "DateConsultation": "2025-06-18",
+      "Matricule_Employe": "8462",
+      "Nom_Employe": "Hajar",
+      "Prenom_Employe": "Soulaimani",
+      "Nom_Malade": "SOUILAIMANI",
+      "Prenom_Malade": "HAJAR",
+      "Type_Malade": "Medical",
+      "Montant": "1200150.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Lui-même"
+    },
+    {
+      "DateConsultation": "2025-08-01",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "El Fassi",
+      "Prenom_Employe": "Youssef",
+      "Nom_Malade": "Chraibi",
+      "Prenom_Malade": "Naima",
+      "Type_Malade": "Optique",
+      "Montant": "7000.01",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Conjoint"
+    }
+  ]
+}

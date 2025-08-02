@@ -1,0 +1,62 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "2025-07-26",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "El Fassi",
+      "Prenom_Employe": "Youssef",
+      "Nom_Malade": "El Fassi",
+      "Prenom_Malade": "Youssef",
+      "Type_Malade": "dentaire",
+      "Montant": "7777",
+      "Montant_Rembourse": "4444",
+      "Code_Assurance": "",
+      "Numero_Declaration": "hgd",
+      "Ayant_Droit": "employe",
+      "DateNaissance": "1985-09-30",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "Chraibi",
+          "prenom": "Naima",
+          "DateNaissance": "1888-06-10"
+        },
+        {
+          "type": "enfant",
+          "nom": "El Fassi",
+          "prenom": "Aya",
+          "DateNaissance": "2001-01-15"
+        }
+      ]
+    },
+    {
+      "DateConsultation": "2025-07-26",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "El Fassi",
+      "Prenom_Employe": "Youssef",
+      "Nom_Malade": "El Fassi",
+      "Prenom_Malade": "Youssef",
+      "Type_Malade": "optique",
+      "Montant": "800",
+      "Montant_Rembourse": "500",
+      "Code_Assurance": "",
+      "Numero_Declaration": "32",
+      "Ayant_Droit": "employe",
+      "DateNaissance": "1985-09-30",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "Chraibi",
+          "prenom": "Naima",
+          "DateNaissance": "1888-06-10"
+        },
+        {
+          "type": "enfant",
+          "nom": "El Fassi",
+          "prenom": "Aya",
+          "DateNaissance": "2001-01-15"
+        }
+      ]
+    }
+  ]
+}

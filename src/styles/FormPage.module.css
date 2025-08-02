@@ -1,0 +1,553 @@
+/*
+ * Styles généraux et variables CSS
+ */
+:root {
+  --background-light: #f0f2f5;
+  --background-dark: #1a1a1a; /* Fond plus sombre pour un meilleur contraste */
+  --text-light: #333;
+  --text-dark: #e0e0e0; /* Texte plus clair pour le mode sombre */
+  --card-bg-light: #fff;
+  --card-bg-dark: #2c2c2c; /* Fond de carte plus sombre */
+  --border-light: #ddd;
+  --border-dark: #444;
+  --accent-color: #007bff; /* Couleur d'accentuation primaire */
+  --button-primary-bg: #28a745; /* Vert pour la soumission */
+  --button-primary-hover-bg: #218838;
+  --button-primary-text: white;
+  --button-disabled-bg: #cccccc;
+  --button-disabled-text: #666666;
+  --alert-warning-bg: #fff3cd;
+  --alert-warning-text: #856404;
+  --alert-warning-border: #ffeeba;
+  --alert-success-bg: #d4edda;
+  --alert-success-text: #155724;
+  --alert-success-border: #c3e6cb;
+  --modal-bg-light: rgba(0, 0, 0, 0.5);
+  --modal-bg-dark: rgba(0, 0, 0, 0.7);
+}
+
+/* Styles de base pour le corps du document */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif; /* Utilisation de la police Inter */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--background-light);
+  color: var(--text-light);
+  /* Assurez-vous que le corps prend toute la hauteur pour un dimensionnement correct du conteneur */
+  min-height: 100vh;
+  overflow-x: hidden; /* Empêche le défilement horizontal */
+}
+
+/* Styles spécifiques au mode sombre */
+body.dark-mode {
+  background-color: var(--background-dark);
+  color: var(--text-dark);
+}
+
+/*
+ * Conteneur principal du formulaire
+ */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centre horizontalement */
+  justify-content: flex-start; /* Aligne le contenu en haut */
+  min-height: 100vh; /* Hauteur complète de la fenêtre */
+  width: 100%; /* Largeur complète de la fenêtre */
+  padding: 20px;
+  box-sizing: border-box; /* Inclut le padding dans la largeur/hauteur */
+  background-color: var(--background-light); /* Fond par défaut */
+  transition: background-color 0.3s ease;
+}
+
+body.dark-mode .container {
+  background-color: var(--background-dark);
+}
+
+/*
+ * Style du formulaire
+ */
+.form {
+  width: 100%;
+  max-width: 900px; /* Largeur maximale pour le formulaire sur les grands écrans */
+  background-color: var(--card-bg-light);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  overflow-y: auto; /* Active le défilement vertical pour les longs formulaires */
+  flex-grow: 1; /* Permet au formulaire de grandir et de prendre l'espace disponible */
+}
+
+body.dark-mode .form {
+  background-color: var(--card-bg-dark);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.formTitle {
+  text-align: center;
+  color: var(--accent-color);
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  padding-top: 20px; /* Ajoute un padding en haut du titre */
+}
+
+/* Sections du formulaire (fieldsets) */
+.formSection {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: border-color 0.3s ease;
+}
+
+body.dark-mode .formSection {
+  border-color: var(--border-dark);
+}
+
+.sectionTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  padding: 0 0.5rem;
+}
+
+/* Groupes de formulaire pour les étiquettes et les entrées */
+.formGroup {
+  margin-bottom: 1.2rem;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: var(--text-light);
+}
+
+body.dark-mode .formGroup label {
+  color: var(--text-dark);
+}
+
+/* Champs de saisie et zones de texte */
+.inputField,
+.textareaField {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  box-sizing: border-box;
+  background-color: var(--card-bg-light);
+  color: var(--text-light);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+body.dark-mode .inputField,
+body.dark-mode .textareaField {
+  background-color: var(--card-bg-dark);
+  border-color: var(--border-dark);
+  color: var(--text-dark);
+}
+
+.inputField:focus,
+.textareaField:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Style spécifique pour le champ d'âge */
+.ageInput {
+  width: 100px; /* Largeur fixe pour le champ d'âge */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Groupe d'entrées pour les champs côte à côte */
+.inputGroup {
+  display: flex;
+  gap: 20px; /* Espacement entre les champs */
+}
+
+.inputFieldHalf {
+  flex: 1; /* Chaque champ prend la moitié de l'espace */
+}
+
+/* Style du groupe de boutons radio */
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap; /* Permet le retour à la ligne sur les petits écrans */
+  gap: 15px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.radioInput {
+  margin-right: 8px;
+  /* Des styles de boutons radio personnalisés peuvent être ajoutés ici si nécessaire */
+}
+
+/* Messages d'alerte */
+.alert {
+  padding: 12px 15px;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.alertWarning {
+  background-color: var(--alert-warning-bg);
+  color: var(--alert-warning-text);
+  border: 1px solid var(--alert-warning-border);
+}
+
+.alertSuccess {
+  background-color: var(--alert-success-bg);
+  color: var(--alert-success-text);
+  border: 1px solid var(--alert-success-border);
+}
+
+/* Bouton de soumission */
+.submitButton {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--button-primary-text);
+  background-color: var(--button-primary-bg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.submitButton:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--button-primary-hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.submitButton:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+/* Bouton de bascule du mode sombre */
+.darkModeToggle {
+  position: absolute; /* Positionnement absolu */
+  top: 20px; /* À 20px du haut */
+  right: 20px; /* À 20px de la droite */
+  z-index: 10; /* Assurez-vous qu'il est au-dessus des autres contenus */
+}
+
+.darkModeButton {
+  padding: 8px 16px;
+  background-color: var(--card-bg-light);
+  color: var(--text-light);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode .darkModeButton {
+  background-color: var(--card-bg-dark);
+  color: var(--text-dark);
+  border-color: var(--border-dark);
+}
+
+.darkModeButton:hover {
+  opacity: 0.9;
+}
+
+/*
+ * Style du modal personnalisé
+ */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--modal-bg-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px); /* Effet verre dépoli */
+}
+
+body.dark-mode .modalOverlay {
+  background-color: var(--modal-bg-dark);
+}
+
+.modalContent {
+  background-color: var(--card-bg-light);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 90%;
+  max-width: 450px;
+  transform: scale(0.95);
+  animation: modalAppear 0.3s forwards ease-out;
+}
+
+body.dark-mode .modalContent {
+  background-color: var(--card-bg-dark);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modalTitle {
+  font-size: 1.8rem;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.modalMessage {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.cancelButton,
+.confirmButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.cancelButton {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancelButton:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.confirmButton {
+  background-color: var(--button-primary-bg);
+  color: white;
+}
+
+.confirmButton:hover {
+  background-color: var(--button-primary-hover-bg);
+  transform: translateY(-1px);
+}
+
+/* Animation pour le modal */
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/*
+ * Ajustements responsifs
+ */
+@media (max-width: 768px) {
+  .formTitle {
+    font-size: 2rem;
+  }
+
+  .formSection {
+    padding: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.2rem;
+  }
+
+  .formGroup label {
+    font-size: 0.95rem;
+  }
+
+  .inputField,
+  .textareaField {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+
+  .inputGroup {
+    flex-direction: column; /* Empile les champs verticalement sur les petits écrans */
+    gap: 10px;
+  }
+
+  .inputFieldHalf {
+    width: 100%; /* Prend toute la largeur lorsqu'il est empilé */
+  }
+
+  .radioGroup {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .submitButton {
+    padding: 12px 15px;
+    font-size: 1rem;
+  }
+
+  .darkModeToggle {
+    padding-right: 10px;
+  }
+
+  .modalTitle {
+    font-size: 1.5rem;
+  }
+
+  .modalMessage {
+    font-size: 1rem;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cancelButton,
+  .confirmButton {
+    width: 100%;
+  }
+}
+
+/* Styles pour le OCRScanner */
+.ocrSection {
+  background-color: var(--background-light); /* Utilise le même fond que le corps */
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode .ocrSection {
+  background-color: var(--card-bg-dark); /* Utilise le fond de carte sombre en mode sombre */
+  border-color: var(--border-dark);
+}
+
+.ocrTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.ocrSection .radioGroup { /* Spécifique pour les radios de l'OCR */
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.ocrSection .radioLabel {
+  font-size: 1rem;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.uploadLabel {
+  display: block;
+  width: 100%;
+}
+
+.uploadLabel input[type="file"] {
+  display: none; /* Cache l'input de fichier par défaut */
+}
+
+.uploadButton {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.uploadButton:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.extractButton {
+  padding: 10px 20px;
+  background-color: var(--button-primary-bg);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Prend toute la largeur disponible */
+}
+
+.extractButton:hover:not(:disabled) {
+  background-color: var(--button-primary-hover-bg);
+  transform: translateY(-1px);
+}
+
+.extractButton:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 1rem;
+  font-style: italic;
+  color: var(--text-light);
+}
+
+body.dark-mode .status {
+  color: var(--text-dark);
+}
+
+/* Responsive adjustments for OCR section */
+@media (min-width: 768px) {
+  .ocrSection .controls {
+    flex-direction: row; /* Aligne les boutons côte à côte sur les grands écrans */
+    justify-content: center;
+  }
+  .uploadButton, .extractButton {
+    width: auto; /* Largeur automatique pour les boutons */
+  }
+}

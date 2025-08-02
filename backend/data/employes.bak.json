@@ -1,0 +1,110 @@
+[
+  {
+    "DateConsultation": "2025-01-10",
+    "Matricule_Employe": "EMP001",
+    "Nom_Employe": "Dupont",
+    "Prenom_Employe": "Jean",
+    "Nom_Malade": "Martin",
+    "Prenom_Malade": "Alice",
+    "Type_Malade": "Grippe",
+    "Montant": 120,
+    "Montant_Rembourse": 100,
+    "Code_Assurance": "ASS123",
+    "Age": 34
+  },
+  {
+    "DateConsultation": "2025-02-05",
+    "Matricule_Employe": "EMP002",
+    "Nom_Employe": "Leroy",
+    "Prenom_Employe": "Marie",
+    "Nom_Malade": "Durand",
+    "Prenom_Malade": "Paul",
+    "Type_Malade": "Allergie",
+    "Montant": 80,
+    "Montant_Rembourse": 60,
+    "Code_Assurance": "ASS456",
+    "Age": 28
+  },
+  {
+    "DateConsultation": "2025-02-20",
+    "Matricule_Employe": "EMP003",
+    "Nom_Employe": "Bernard",
+    "Prenom_Employe": "Pierre",
+    "Nom_Malade": "Petit",
+    "Prenom_Malade": "Sophie",
+    "Type_Malade": "Vaccination",
+    "Montant": 50,
+    "Montant_Rembourse": 50,
+    "Code_Assurance": "ASS789",
+    "Age": 40
+  },
+  {
+    "DateConsultation": "2025-03-03",
+    "Matricule_Employe": "EMP004",
+    "Nom_Employe": "Moreau",
+    "Prenom_Employe": "Lucie",
+    "Nom_Malade": "Simon",
+    "Prenom_Malade": "David",
+    "Type_Malade": "Consultation",
+    "Montant": 70,
+    "Montant_Rembourse": 70,
+    "Code_Assurance": "ASS012",
+    "Age": 52
+  },
+  {
+    "DateConsultation": "2025-03-15",
+    "Matricule_Employe": "EMP005",
+    "Nom_Employe": "Petit",
+    "Prenom_Employe": "Thomas",
+    "Nom_Malade": "Robert",
+    "Prenom_Malade": "Emma",
+    "Type_Malade": "Opération",
+    "Montant": 200,
+    "Montant_Rembourse": 150,
+    "Code_Assurance": "ASS345",
+    "Age": 46,
+    "Famille": [
+      {
+        "nom": "Petit",
+        "prenom": "marina",
+        "type": "conjoint"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "EMP000",
+    "Nom_Employe": "benrouchdi",
+    "Prenom_Employe": "reda",
+    "Famille": [
+      {
+        "nom": "BENROUCHDI",
+        "prenom": "reda2",
+        "type": "enfant"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "345",
+    "Nom_Employe": "DAVID",
+    "Prenom_Employe": "CHOEN",
+    "Famille": [
+      {
+        "nom": "DAVID",
+        "prenom": "ISHAK",
+        "type": "enfant"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "TETS",
+    "Nom_Employe": "TEST",
+    "Prenom_Employe": "",
+    "Famille": []
+  },
+  {
+    "Matricule_Employe": "final",
+    "Nom_Employe": "final",
+    "Prenom_Employe": "final",
+    "Famille": []
+  }
+]

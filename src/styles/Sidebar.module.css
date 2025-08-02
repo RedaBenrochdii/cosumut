@@ -1,0 +1,104 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  z-index: 1000;
+  pointer-events: auto;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+  backdrop-filter: blur(8px);
+  box-shadow: 6px 0 20px rgba(255, 255, 255, 0.347);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(29, 18, 236, 0.2);
+}
+
+.logoContainer {
+  width: 100%;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.logo {
+  max-width: 150px;
+  height: auto;
+  transition: transform 0.3s ease-in-out;
+}
+
+.logoContainer:hover .logo {
+  transform: rotate(10deg);
+}
+
+.menu {
+  list-style: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu li {
+  margin-bottom: 1.5rem;
+  padding: 0.8rem;
+  border-radius: 10px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slideIn 0.5s forwards;
+}
+
+.menu li:nth-child(1) { animation-delay: 0.2s; }
+.menu li:nth-child(2) { animation-delay: 0.4s; }
+.menu li:nth-child(3) { animation-delay: 0.6s; }
+.menu li:nth-child(4) { animation-delay: 0.8s; }
+.menu li:nth-child(5) { animation-delay: 1s; }
+.menu li:nth-child(6) { animation-delay: 1.2s; }
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu li:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(10px);
+  box-shadow: 0 4px 10px rgba(34, 5, 222, 0.1);
+}
+
+.menu li.active {
+  font-weight: bold;
+  color: #3b82f6;
+  background-color: rgba(7, 92, 229, 0.2);
+  border-left: 4px solid #0814ea;
+}
+
+.menu li a,
+.menu li button {
+  text-decoration: none;
+  color: inherit;
+  font-size: 1.1rem;
+  font-weight: 500; /* ✅ Gras uniforme pour TOUS */
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.menu li a:hover,
+.menu li button:hover {
+  color: #3b82f6;
+}

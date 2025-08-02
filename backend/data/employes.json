@@ -1,0 +1,66 @@
+[
+  {
+    "Matricule_Employe": "EMP001",
+    "Nom_Employe": "Dupont",
+    "Prenom_Employe": "Jean",
+    "DateNaissance": "",
+    "Famille": [],
+    "Numero_Contrat": "",
+    "Numero_Affiliation": "",
+    "Nom_Prenom_Assure": ""
+  },
+  {
+    "Matricule_Employe": "EMP002",
+    "Nom_Employe": "Leroy",
+    "Prenom_Employe": "Marie",
+    "DateNaissance": "",
+    "Famille": [
+      {
+        "nom": "KJG",
+        "prenom": "LUYKBNI",
+        "type": "enfant",
+        "dateNaissance": "2025-08-02"
+      }
+    ],
+    "Numero_Contrat": "",
+    "Numero_Affiliation": "",
+    "Nom_Prenom_Assure": ""
+  },
+  {
+    "Matricule_Employe": "EMP003",
+    "Nom_Employe": "Bernard",
+    "Prenom_Employe": "Pierre",
+    "DateNaissance": "",
+    "Famille": [],
+    "Numero_Contrat": "",
+    "Numero_Affiliation": "",
+    "Nom_Prenom_Assure": ""
+  },
+  {
+    "Matricule_Employe": "EMP004",
+    "Nom_Employe": "Moreau",
+    "Prenom_Employe": "Lucie",
+    "DateNaissance": "",
+    "Famille": [],
+    "Numero_Contrat": "",
+    "Numero_Affiliation": "",
+    "Nom_Prenom_Assure": ""
+  },
+  {
+    "Matricule_Employe": "EMP005",
+    "Nom_Employe": "Petit",
+    "Prenom_Employe": "Thomas",
+    "DateNaissance": "",
+    "Famille": [],
+    "Numero_Contrat": "",
+    "Numero_Affiliation": "",
+    "Nom_Prenom_Assure": ""
+  },
+  {
+    "Matricule_Employe": "tbgikjyu",
+    "Nom_Employe": "yktvk",
+    "Prenom_Employe": "kt",
+    "DateNaissance": "2001-03-31",
+    "Famille": []
+  }
+]

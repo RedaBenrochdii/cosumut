@@ -1,0 +1,68 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "2025-07-26",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Benali",
+      "Prenom_Employe": "Reda",
+      "Nom_Malade": "Benali",
+      "Prenom_Malade": "Reda",
+      "Type_Malade": "médicale",
+      "Montant": "300",
+      "Montant_Rembourse": "230",
+      "Code_Assurance": "",
+      "Numero_Declaration": "DECL643791",
+      "Ayant_Droit": "employe",
+      "DateNaissance": "1875-05-12",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "El Hanaoui",
+          "prenom": "Salma",
+          "DateNaissance": "1880-03-10"
+        },
+        {
+          "type": "enfant",
+          "nom": "Benali",
+          "prenom": "Adam",
+          "DateNaissance": "1900-04-22"
+        },
+        {
+          "type": "enfant",
+          "nom": "Benali",
+          "prenom": "Maya",
+          "DateNaissance": "2012-11-12"
+        }
+      ]
+    },
+    {
+      "DateConsultation": "2025-07-26",
+      "Matricule_Employe": "EMP003",
+      "Nom_Employe": "Khalil",
+      "Prenom_Employe": "Mounir",
+      "Nom_Malade": "Khalil",
+      "Prenom_Malade": "Rania",
+      "Type_Malade": "optique",
+      "Montant": "1200.150",
+      "Montant_Rembourse": "900",
+      "Code_Assurance": "",
+      "Numero_Declaration": "ezdez",
+      "Ayant_Droit": "conjoint",
+      "DateNaissance": "1990-03-21",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "Bennani",
+          "prenom": "Rania",
+          "DateNaissance": "1993-07-08"
+        },
+        {
+          "type": "enfant",
+          "nom": "Khalil",
+          "prenom": "Nour",
+          "DateNaissance": "2017-05-20"
+        }
+      ]
+    }
+  ]
+}

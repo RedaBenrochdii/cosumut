@@ -1,0 +1,74 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "2025-07-28",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Benali",
+      "Prenom_Employe": "Reda",
+      "Nom_Malade": "Benali",
+      "Prenom_Malade": "Maya",
+      "Type_Malade": "médicale",
+      "Montant": "",
+      "Montant_Rembourse": "",
+      "Code_Assurance": "",
+      "Numero_Declaration": "JHV YG",
+      "Ayant_Droit": "enfant",
+      "DateNaissance": "1875-05-12",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "El Hanaoui",
+          "prenom": "Salma",
+          "DateNaissance": "1880-03-10"
+        },
+        {
+          "type": "enfant",
+          "nom": "Benali",
+          "prenom": "Adam",
+          "DateNaissance": "1900-04-22"
+        },
+        {
+          "type": "enfant",
+          "nom": "Benali",
+          "prenom": "Maya",
+          "DateNaissance": "2012-11-12"
+        }
+      ]
+    },
+    {
+      "DateConsultation": "2025-07-28",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Benali",
+      "Prenom_Employe": "Reda",
+      "Nom_Malade": "Benali",
+      "Prenom_Malade": "Salma",
+      "Type_Malade": "médicale",
+      "Montant": "1000",
+      "Montant_Rembourse": "",
+      "Code_Assurance": "",
+      "Numero_Declaration": "JFBY",
+      "Ayant_Droit": "conjoint",
+      "DateNaissance": "1875-05-12",
+      "Famille": [
+        {
+          "type": "conjoint",
+          "nom": "El Hanaoui",
+          "prenom": "Salma",
+          "DateNaissance": "1880-03-10"
+        },
+        {
+          "type": "enfant",
+          "nom": "Benali",
+          "prenom": "Adam",
+          "DateNaissance": "1900-04-22"
+        },
+        {
+          "type": "enfant",
+          "nom": "Benali",
+          "prenom": "Maya",
+          "DateNaissance": "2012-11-12"
+        }
+      ]
+    }
+  ]
+}

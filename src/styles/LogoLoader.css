@@ -1,0 +1,48 @@
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff;
+  z-index: 9999;
+}
+
+.loader-logo {
+  width: 150px; /* Ajustez la taille selon vos besoins */
+  height: auto;
+}
+
+/* Application de la nouvelle animation */
+.animated-logo {
+  animation: staggered-fade-in 2s infinite ease-in-out;
+}
+
+/*
+  Animation simulant l'apparition successive des 3 formes
+  en jouant sur l'opacité et une légère transformation.
+*/
+@keyframes staggered-fade-in {
+  0% {
+    opacity: 0.2;
+    transform: translateY(10px) scale(0.95);
+  }
+  30% {
+    opacity: 0.6; /* 1ère forme visible */
+    transform: translateY(0) scale(1);
+  }
+  60% {
+    opacity: 0.8; /* 2ème forme visible */
+  }
+  80% {
+    opacity: 1;   /* 3ème forme visible (logo complet) */
+    transform: scale(1.05); /* Léger grossissement final */
+  }
+  100% {
+    opacity: 0.2;
+    transform: translateY(10px) scale(0.95);
+  }
+}

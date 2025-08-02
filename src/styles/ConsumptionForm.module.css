@@ -1,0 +1,208 @@
+/* ================================
+   Fichier CSS amélioré - CosuMutuel Module
+   Contient styles globaux & style bouton "Choisir un fichier"
+   ================================ */
+
+/* Variables CSS */
+:root {
+  --clr-bg: #f3f6f9;
+  --clr-white: #ffffff;
+  --clr-primary: #3182ce;
+  --clr-primary-dark: #2b6cb0;
+  --clr-success: #4caf50;
+  --clr-success-dark: #38a169;
+  --clr-danger: #e53e3e;
+  --clr-danger-dark: #c53030;
+  --clr-gray-light: #e2e8f0;
+  --clr-gray: #4a5568;
+  --clr-text: #2d3748;
+  --trans-fast: 0.2s ease-out;
+  --trans-med: 0.4s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { width: 0; }
+  to   { width: 4rem; }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%     { transform: scale(1.02); }
+}
+
+/* Conteneur principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--clr-bg);
+  font-family: "Segoe UI", Roboto, sans-serif;
+  animation: fadeIn var(--trans-med);
+}
+
+/* Titre principal */
+.title {
+  font-size: 2rem;
+  color: var(--clr-text);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  animation: fadeIn var(--trans-med) 0.1s backwards;
+}
+.title::after {
+  content: "";
+  display: block;
+  width: 4rem;
+  height: 0.25rem;
+  margin: 0.5rem auto 0;
+  background-color: var(--clr-primary);
+  border-radius: 2px;
+  animation: slideIn var(--trans-fast);
+}
+
+/* Formulaire */
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: var(--clr-white);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.form input,
+.form select {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--clr-gray-light);
+  border-radius: 8px;
+  background-color: var(--clr-white);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+}
+.form input:focus,
+.form select:focus {
+  border-color: var(--clr-primary);
+  outline: none;
+  transform: scale(1.02);
+}
+.form button {
+  grid-column: 1/-1;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--clr-primary);
+  color: var(--clr-white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--trans-fast), transform var(--trans-fast);
+  animation: pulse 5s infinite;
+}
+.form button:hover {
+  background-color: var(--clr-primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Style bouton "Choisir un fichier" */
+.uploadContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  margin: 1rem 0;
+  border: 2px dashed var(--clr-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--trans-fast), border-color var(--trans-fast);
+  grid-column: span 2;
+}
+.uploadContainer:hover {
+  background-color: rgba(49,130,206,0.1);
+  border-color: var(--clr-primary-dark);
+}
+.uploadInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.uploadLabel {
+  font-size: 1rem;
+  color: var(--clr-primary);
+  font-weight: 600;
+}
+.fileName {
+  font-size: 0.875rem;
+  color: var(--clr-gray);
+}
+
+/* Tableau */
+.scrollContainer {
+  overflow-x: auto;
+  margin-top: 2rem;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--clr-white);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.table th,
+.table td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--clr-gray);
+  border-bottom: 1px solid var(--clr-gray-light);
+}
+.table th {
+  background-color: var(--clr-bg);
+  font-weight: 600;
+}
+.table tr:hover td {
+  background-color: rgba(49,130,206,0.05);
+}
+
+/* Badges */
+.statusBadge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.a_traiter { background-color: #fbbf24; color: #92400e; }
+.encours    { background-color: #3b82f6; color: #1e3a8a; }
+.valide     { background-color: #4ade80; color: #166534; }
+
+/* Pagination, Delete, Exporter, Actions similar to above... */
+.warningInput {
+  border: 2px solid #dc3545 !important;
+  background-color: #fff0f0;
+}
+.dateContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.warningInput {
+  border: 2px solid #dc3545 !important;
+  background-color: #fff0f0;
+}
+
+.warningIcon {
+  position: absolute;
+  right: 10px;
+  font-size: 20px;
+  color: #dc3545;
+}
