@@ -1,0 +1,102 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "2025-08-04",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "Leroy",
+      "Prenom_Employe": "Marie",
+      "Nom_Malade": "Leroy",
+      "Prenom_Malade": "Marie",
+      "Type_Malade": "Optique",
+      "Montant": "444444.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Lui-meme"
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "Leroy",
+      "Prenom_Employe": "Marie",
+      "Nom_Malade": "Leroy",
+      "Prenom_Malade": "Marie",
+      "Type_Malade": "Dentaire",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Dupont",
+      "Prenom_Employe": "Jean",
+      "Nom_Malade": "Dupont",
+      "Prenom_Malade": "Jean",
+      "Type_Malade": "Medical",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP003",
+      "Nom_Employe": "Bernard",
+      "Prenom_Employe": "Pierre",
+      "Nom_Malade": "Bernard",
+      "Prenom_Malade": "Pierre",
+      "Type_Malade": "Dentaire",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP004",
+      "Nom_Employe": "Moreau",
+      "Prenom_Employe": "Lucie",
+      "Nom_Malade": "Moreau",
+      "Prenom_Malade": "Lucie",
+      "Type_Malade": "Optique",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Dupont",
+      "Prenom_Employe": "Jean",
+      "Nom_Malade": "Dupont",
+      "Prenom_Malade": "Jean",
+      "Type_Malade": "",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Dupont",
+      "Prenom_Employe": "Jean",
+      "Nom_Malade": "Dupont",
+      "Prenom_Malade": "Jean",
+      "Type_Malade": "",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    }
+  ]
+}

@@ -56,13 +56,13 @@ export function DataTable({ data, onDelete, onDeleteAll, onEdit }) {
                     className={`${styles.button} ${styles.primaryButton}`}
                     style={{ backgroundColor: 'var(--warning-color)' }} /* Bouton Modifier en jaune */
                   >
-                    ✏️ Modifier
+                     Modifier
                   </button>
                   <button
                     onClick={() => onDelete(idx)}
                     className={`${styles.button} ${styles.dangerButton}`}
                   >
-                    🗑️ Supprimer
+                     Supprimer
                   </button>
                 </div>
               </td>

@@ -1,0 +1,46 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "Leroy",
+      "Prenom_Employe": "Marie",
+      "Nom_Malade": "KJG",
+      "Prenom_Malade": "LUYKBNI",
+      "Type_Malade": "Medical",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Enfants"
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "Leroy",
+      "Prenom_Employe": "Marie",
+      "Nom_Malade": "Leroy",
+      "Prenom_Malade": "Marie",
+      "Type_Malade": "",
+      "Montant": "55555.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Lui-meme"
+    },
+    {
+      "DateConsultation": "2025-08-04",
+      "Matricule_Employe": "EMP001",
+      "Nom_Employe": "Dupont",
+      "Prenom_Employe": "Jean",
+      "Nom_Malade": "Dupont",
+      "Prenom_Malade": "Jean",
+      "Type_Malade": "Dentaire",
+      "Montant": "777777.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": "Lui-meme"
+    }
+  ]
+}

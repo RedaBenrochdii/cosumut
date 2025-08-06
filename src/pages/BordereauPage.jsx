@@ -154,34 +154,55 @@ export default function BordereauPage() {
     return `${min.toLocaleDateString()} → ${max.toLocaleDateString()}`;
   };
 
-  const exportBordereau = async () => {
-    if (!dossiers.length) {
-      setMessage('⚠️ Aucun dossier à exporter.');
-      return;
+const exportBordereau = async () => {
+  if (!dossiers.length) {
+    setMessage('⚠️ Aucun dossier à exporter.');
+    return;
+  }
+  try {
+    setLoading(true);
+    setMessage('📤 Export en cours...');
+
+    // --- Mapping pour correspondre exactement aux colonnes de ton modèle ---
+    const donneesTableau = dossiers.map(item => [
+      item.NumeroPolice || '',                   // 1. N° Police
+      item.NumeroAdhesion || '',                 // 2. N° Adhésion
+      item.Matricule_Employe || '',              // 3. Matricule
+      (
+        (item.Nom_Malade ? item.Nom_Malade : '') +
+        (item.Prenom_Malade ? ' ' + item.Prenom_Malade : '')
+      ).trim(),                                  // 4. Nom/Prénom
+      item.NumeroDossier || '',                  // 5. Numéro dossier
+      item.Lien_Parente || '',                   // 6. Lien parenté
+      item.Montant || ''                         // 7. Montant
+    ]);
+
+    // --- Envoi au backend ---
+    const res = await axios.post(
+      'http://localhost:4000/api/export-bordereau',
+      { donneesTableau } // clé attendue par le backend ExcelJS
+    );
+
+    if (res.data.success && res.data.filename) {
+      window.open(`http://localhost:4000/bordereaux/${res.data.filename}`, '_blank');
+      setMessage('✅ Export réussi.');
+      localStorage.setItem('formList', '[]');
+      setDossiers([]);
+      setFilteredDossiers([]);
+      setLastFilename(res.data.filename);
+      const updated = await axios.get('http://localhost:4000/api/bordereaux');
+      setHistorique(updated.data);
+      setFilteredHistorique(updated.data);
+    } else {
+      setMessage('❌ Erreur lors de la génération du bordereau.');
     }
-    try {
-      setLoading(true);
-      setMessage('📤 Export en cours...');
-      const res = await axios.post('http://localhost:4000/api/export-bordereau', dossiers);
-      if (res.data.success && res.data.filename) {
-        window.open(`http://localhost:4000/bordereaux/${res.data.filename}`, '_blank');
-        setMessage('✅ Export réussi.');
-        localStorage.setItem('formList', '[]');
-        setDossiers([]);
-        setFilteredDossiers([]);
-        setLastFilename(res.data.filename);
-        const updated = await axios.get('http://localhost:4000/api/bordereaux');
-        setHistorique(updated.data);
-        setFilteredHistorique(updated.data);
-      } else {
-        setMessage('❌ Erreur lors de la génération du bordereau.');
-      }
-    } catch {
-      setMessage('❌ Erreur serveur.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch {
+    setMessage('❌ Erreur serveur.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDelete = idx => {
     const nd = [...filteredDossiers];

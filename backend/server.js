@@ -331,6 +331,7 @@ app.post('/api/employes/upload-excel', uploadExcel.single('excelFile'), async (r
 
 
 // 📤 Export Excel + JSON bordereau
+// 📤 Export Excel bordereau - Génère fichier avec colonnes personnalisées
 app.post('/api/export-bordereau', async (req, res) => {
   try {
     const dossiers = req.body;
@@ -341,36 +342,48 @@ app.post('/api/export-bordereau', async (req, res) => {
     const filename = `bordereau_${now.toISOString().slice(0, 19).replace(/[:T]/g, "-")}.xlsx`;
     const filepath = path.join(bordereauxDir, filename);
 
-    // 🔸 Export Excel
-    const ws = XLSX.utils.json_to_sheet(dossiers);
+    // Ordre et titres des colonnes (ceux affichés dans l'image)
+    const COLONNES = [
+      "N° Police",
+      "N° Adhésion",
+      "Matricule",
+      "Nom/Prénom",
+      "Numéro dossier",
+      "Lien parenté",
+      "Montant"
+    ];
+
+    // Génère les données à exporter (tableau d'objets → tableau d'arrays)
+    const donneesExport = [COLONNES]
+      .concat(dossiers.map(item => COLONNES.map(col => item[col] || "")));
+
+    // Utilise XLSX pour écrire le fichier Excel
+    const ws = XLSX.utils.aoa_to_sheet(donneesExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Bordereau");
     XLSX.writeFile(wb, filepath);
 
-    // 🔸 Enregistrer le fichier JSON correspondant
+    // Enregistre aussi le JSON (optionnel, comme avant)
     const jsonFilename = filename.replace('.xlsx', '.json');
     const jsonPath = path.join(bordereauxDir, jsonFilename);
     const jsonData = { dossiers };
     await fs.writeJson(jsonPath, jsonData, { spaces: 2 });
 
-    // 🔸 Historique
+    // Historique (comme avant)
     const nbDossiers = dossiers.length;
-    const total = dossiers.reduce((sum, d) => sum + parseFloat(d.Total_Frais_Engages || 0), 0).toFixed(2); // Utilise le nouveau champ
-    const rembourse = dossiers.reduce((sum, d) => sum + parseFloat(d.Montant_Rembourse || 0), 0).toFixed(2); // Assurez-vous que Montant_Rembourse est présent ou ajustez
+    const total = dossiers.reduce((sum, d) => sum + parseFloat(d["Montant"] || 0), 0).toFixed(2);
 
     const historique = fs.existsSync(bordereauxHistoryFile)
       ? fs.readJsonSync(bordereauxHistoryFile)
       : [];
-
     historique.unshift({
       id: `BORD-${historique.length + 1}`,
       filename,
       date: now.toISOString(),
       nbDossiers,
       total,
-      rembourse
+      rembourse: total
     });
-
     fs.writeJsonSync(bordereauxHistoryFile, historique, { spaces: 2 });
 
     res.json({ success: true, filename });
@@ -379,6 +392,7 @@ app.post('/api/export-bordereau', async (req, res) => {
     res.status(500).json({ error: "Erreur export bordereau" });
   }
 });
+
 
 // 📜 Historique unifié des bordereaux
 app.get('/api/bordereaux', (_, res) => {

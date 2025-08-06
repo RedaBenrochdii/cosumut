@@ -60,7 +60,7 @@ const OCRScanner = ({ onAutoFill }) => {
       const res = await axios.post('http://localhost:4000/api/ocr/gemini', formData);
       // Supposons que res.data contient un objet avec les champs à remplir
       onAutoFill(res.data); 
-      setStatus('✅ Champs extraits avec succès !');
+      setStatus(' Champs extraits avec succès !');
       setSelectedFile(null);
     } catch (error) {
       console.error("Erreur OCR Gemini:", error);
@@ -161,7 +161,7 @@ const OCRScanner = ({ onAutoFill }) => {
             onChange={handleFileSelect}
           />
           <span className={styles.uploadButton}>
-            Choisir un fichier
+        
           </span>
         </label>
 

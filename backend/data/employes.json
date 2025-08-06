@@ -4,7 +4,14 @@
     "Nom_Employe": "Dupont",
     "Prenom_Employe": "Jean",
     "DateNaissance": "",
-    "Famille": [],
+    "Famille": [
+      {
+        "nom": "Jean",
+        "prenom": "reda",
+        "type": "enfant",
+        "dateNaissance": "2001-03-29"
+      }
+    ],
     "Numero_Contrat": "",
     "Numero_Affiliation": "",
     "Nom_Prenom_Assure": ""
@@ -20,6 +27,12 @@
         "prenom": "LUYKBNI",
         "type": "enfant",
         "dateNaissance": "2025-08-02"
+      },
+      {
+        "nom": "TETST",
+        "prenom": "TETST",
+        "type": "conjoint",
+        "dateNaissance": "2025-09-07"
       }
     ],
     "Numero_Contrat": "",
@@ -62,5 +75,19 @@
     "Prenom_Employe": "kt",
     "DateNaissance": "2001-03-31",
     "Famille": []
+  },
+  {
+    "Matricule_Employe": "EMP007",
+    "Nom_Employe": "reda",
+    "Prenom_Employe": "reda",
+    "DateNaissance": "2007-05-29",
+    "Famille": [
+      {
+        "nom": "TEST",
+        "prenom": "TEST",
+        "type": "conjoint",
+        "dateNaissance": "2009-03-04"
+      }
+    ]
   }
 ]

@@ -220,12 +220,7 @@ export default function ProductionDashboard() {
             {excelUploadMessage}
           </p>
         )}
-        <p className={styles.note}>
-          Le fichier Excel doit contenir les colonnes suivantes dans la première ligne : <br/>
-          `Matricule_Employe`, `Nom_Employe`, `Prenom_Employe`, `DateNaissance`.<br/>
-          D'autres colonnes comme `Numero_Contrat`, `Numero_Affiliation`, `Nom_Prenom_Assure` sont également prises en charge si elles existent.
-          Le fichier `employes.json` sera mis à jour avec ces données.
-        </p>
+        
       </fieldset>
 
       {/* Section Ajouter un nouvel employé */}

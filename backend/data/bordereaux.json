@@ -1,5 +1,29 @@
 [
   {
+    "id": "BORD-10",
+    "filename": "bordereau_2025-08-04-13-08-13.xlsx",
+    "date": "2025-08-04T13:08:13.032Z",
+    "nbDossiers": 2,
+    "total": "0.00",
+    "rembourse": "0.00"
+  },
+  {
+    "id": "BORD-9",
+    "filename": "bordereau_2025-08-04-13-07-10.xlsx",
+    "date": "2025-08-04T13:07:10.237Z",
+    "nbDossiers": 7,
+    "total": "0.00",
+    "rembourse": "0.00"
+  },
+  {
+    "id": "BORD-8",
+    "filename": "bordereau_2025-08-04-09-54-57.xlsx",
+    "date": "2025-08-04T09:54:57.271Z",
+    "nbDossiers": 3,
+    "total": "0.00",
+    "rembourse": "0.00"
+  },
+  {
     "id": "BORD-7",
     "filename": "bordereau_2025-08-02-16-34-36.xlsx",
     "date": "2025-08-02T16:34:36.246Z",

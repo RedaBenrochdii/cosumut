@@ -1,0 +1,32 @@
+{
+  "dossiers": [
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "ttttttttttttt",
+      "Nom_Employe": "ttttttttttt",
+      "Prenom_Employe": "",
+      "Nom_Malade": "YYYYYYY",
+      "Prenom_Malade": "",
+      "Type_Malade": "",
+      "Montant": "333333332.99",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    },
+    {
+      "DateConsultation": "",
+      "Matricule_Employe": "EMP002",
+      "Nom_Employe": "YYYYYYYYYYY",
+      "Prenom_Employe": "",
+      "Nom_Malade": "",
+      "Prenom_Malade": "",
+      "Type_Malade": "",
+      "Montant": "0.00",
+      "Montant_Rembourse": "0.00",
+      "Code_Assurance": "",
+      "Numero_Declaration": "",
+      "Ayant_Droit": ""
+    }
+  ]
+}
