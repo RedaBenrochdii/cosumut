@@ -1,180 +1,180 @@
-// src/components/OCRScanner.jsx (ou OCRScanner.js)
+// src/components/OCRScanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { createWorker } from 'tesseract.js';
 import axios from 'axios';
-// Note: Le style est maintenant géré par FormPage.module.css, donc pas besoin d'importer ici
-// import styles from '../styles/OCRScanner.module.css'; 
-import styles from '../styles/FormPage.module.css'; // Utilisez le même module CSS que FormPage
+import styles from '../styles/FormPage.module.css';
+
+const MAX_SIZE = 1200; // Max largeur/hauteur de l'image redimensionnée (px)
 
 const OCRScanner = ({ onAutoFill }) => {
   const [ocrMethod, setOcrMethod] = useState('gemini');
   const [status, setStatus] = useState('Prêt à scanner');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [anonymizedBlob, setAnonymizedBlob] = useState(null);
   const workerRef = useRef(null);
 
   useEffect(() => {
     if (ocrMethod === 'tesseract' && !workerRef.current) {
       setStatus('Chargement Tesseract...');
-      // Assurez-vous que la langue 'fra' est disponible ou téléchargez-la
       createWorker('fra').then(worker => {
         workerRef.current = worker;
         setStatus('Tesseract prêt');
       }).catch(err => {
-        console.error("Erreur de chargement de Tesseract:", err);
-        setStatus('Erreur de chargement Tesseract');
+        setStatus('Erreur Tesseract');
+        console.error(err);
       });
     }
   }, [ocrMethod]);
 
-  // Étape 1: L'utilisateur sélectionne un fichier
+  // 1. Fichier choisi → resize → preview → option blur
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setStatus(`Fichier prêt : ${file.name}`);
-    }
+    if (!file) return;
+    setStatus(`Chargement image...`);
+    const img = new window.Image();
+    img.onload = () => {
+      let scale = 1;
+      if (img.width > MAX_SIZE || img.height > MAX_SIZE) {
+        scale = Math.min(MAX_SIZE / img.width, MAX_SIZE / img.height);
+      }
+      const outW = Math.round(img.width * scale);
+      const outH = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = outW;
+      canvas.height = outH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, outW, outH);
+
+      // -- Option : blur ici (ex : zone hardcodée pour POC) --
+      // Ex : flouter rectangle (protection RGPD)
+      // ctx.filter = "blur(8px)";
+      // ctx.fillRect(x, y, w, h); // À toi de personnaliser !
+
+      canvas.toBlob(blob => {
+        setSelectedFile(blob);
+        setPreviewUrl(URL.createObjectURL(blob));
+        setStatus(`Image prête (${outW}x${outH}px)`);
+        setAnonymizedBlob(null); // Reset anonymized si on change de fichier
+      }, "image/jpeg", 0.94);
+    };
+    img.src = URL.createObjectURL(file);
   };
 
-  // Étape 2: L'utilisateur clique sur "Extraire"
-  const handleExtract = () => {
-    if (!selectedFile) {
-      // alert("Veuillez d'abord choisir un fichier."); // Remplacer par un modal si possible
-      setStatus("Veuillez d'abord choisir un fichier.");
+  // 2. Anonymisation manuelle par blur (rectangle)
+  const handleAnonymize = () => {
+    if (!selectedFile) return;
+    setStatus("Anonymisation en cours...");
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      // Flouter une zone (tu peux ajuster : x, y, w, h)
+      // Exemple POC (haut, centre de l'image, largeurs typiques : ajuster !)
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.filter = "blur(16px)";
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillRect(90, 85, 330, 48); // <-- A AJUSTER selon ton doc/photo !
+      ctx.restore();
+
+      canvas.toBlob(blob => {
+        setAnonymizedBlob(blob);
+        setPreviewUrl(URL.createObjectURL(blob));
+        setStatus("Aperçu anonymisé prêt !");
+      }, "image/jpeg", 0.92);
+    };
+    img.src = previewUrl;
+  };
+
+  // 3. Envoi OCR Gemini
+  const handleGeminiOCR = async () => {
+    const imgToSend = anonymizedBlob || selectedFile;
+    if (!imgToSend) {
+      setStatus("Aucune image à envoyer !");
       return;
     }
-
-    if (ocrMethod === 'gemini') {
-      handleGeminiOCR(selectedFile);
-    } else {
-      handleTesseractOCR(selectedFile);
-    }
-  };
-
-  const handleGeminiOCR = async (file) => {
+    setStatus('Analyse Gemini en cours...');
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('image', imgToSend, "scan.jpg");
 
     try {
-      setStatus('Analyse Gemini en cours...');
-      // Remarque : L'URL de l'API doit être correctement configurée côté serveur
       const res = await axios.post('http://localhost:4000/api/ocr/gemini', formData);
-      // Supposons que res.data contient un objet avec les champs à remplir
-      onAutoFill(res.data); 
-      setStatus(' Champs extraits avec succès !');
-      setSelectedFile(null);
+      onAutoFill(res.data);
+      setStatus('Champs extraits avec succès (Gemini)');
     } catch (error) {
-      console.error("Erreur OCR Gemini:", error);
       setStatus('Erreur Gemini');
-      // alert("Une erreur est survenue lors de l'analyse par l'IA."); // Remplacer par un modal
+      console.error("Erreur OCR Gemini:", error);
     }
-  };
-  
-  const handleTesseractOCR = async (file) => {
-    if (!workerRef.current) {
-        // alert("Tesseract n'est pas encore chargé. Veuillez patienter."); // Remplacer par un modal
-        setStatus("Tesseract n'est pas encore chargé. Veuillez patienter.");
-        return;
-    }
-    setStatus('Analyse Tesseract en cours...');
-    const { data: { text } } = await workerRef.current.recognize(file);
-    // Logique d'extraction des champs à partir du texte brut de Tesseract
-    // Ceci est un exemple, vous devrez implémenter une logique de parsing plus robuste
-    const fields = parseTesseractText(text); 
-    onAutoFill(fields);
-    setStatus('✅ Champs extraits (Tesseract)');
-    setSelectedFile(null);
   };
 
-  // Fonction utilitaire pour parser le texte de Tesseract (exemple rudimentaire)
+  // 4. Envoi Tesseract (local)
+  const handleTesseractOCR = async () => {
+    if (!workerRef.current) {
+      setStatus("Tesseract non prêt");
+      return;
+    }
+    setStatus('Analyse Tesseract...');
+    const { data: { text } } = await workerRef.current.recognize(anonymizedBlob || selectedFile);
+    const fields = parseTesseractText(text);
+    onAutoFill(fields);
+    setStatus('Champs extraits (Tesseract)');
+  };
+
+  // Parsing simple pour Tesseract (à améliorer selon tes besoins)
   const parseTesseractText = (text) => {
     const parsedFields = {};
-    // Exemple très simple: chercher des mots-clés et extraire la valeur suivante
+    // Ajoute tes regex personnalisées ici !
     const contractMatch = text.match(/Contrat\s*:\s*(\w+)/i);
     if (contractMatch) parsedFields.Numero_Contrat = contractMatch[1];
-
-    const affiliationMatch = text.match(/Affiliation\s*:\s*(\w+)/i);
-    if (affiliationMatch) parsedFields.Numero_Affiliation = affiliationMatch[1];
-
-    const matriculeMatch = text.match(/Matricule\s*Ste\s*:\s*(\w+)/i);
-    if (matriculeMatch) parsedFields.Matricule_Ste = matriculeMatch[1];
-
-    const assureMatch = text.match(/Nom\s+et\s+prénom\s+de\s+l'assuré\s*:\s*(.+)/i);
-    if (assureMatch) parsedFields.Nom_Prenom_Assure = assureMatch[1].trim();
-
-    const dateConsultationMatch = text.match(/Date\s+de\s+la\s+consultation\s*:\s*(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})/i);
-    if (dateConsultationMatch) {
-      // Convertir le format de date si nécessaire (ex: JJ/MM/AAAA vers AAAA-MM-JJ)
-      let date = dateConsultationMatch[1];
-      if (date.includes('/')) {
-        const parts = date.split('/');
-        date = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
-      parsedFields.Date_Consultation = date;
-    }
-
-    // Ajoutez d'autres logiques de parsing pour les autres champs
-    // Par exemple, pour les types de déclaration (Medical, Dentaire, Optique), vous pourriez chercher la présence de ces mots.
-    if (text.toLowerCase().includes('médical')) parsedFields.Type_Declaration = 'Medical';
-    else if (text.toLowerCase().includes('dentaire')) parsedFields.Type_Declaration = 'Dentaire';
-    else if (text.toLowerCase().includes('optique')) parsedFields.Type_Declaration = 'Optique';
-
-    // Pour les frais engagés, cela peut être plus complexe car il faut extraire des nombres
-    const fraisMatch = text.match(/Total\s+des\s+frais\s+engagés\s*:\s*([\d\.,]+)/i);
-    if (fraisMatch) parsedFields.Total_Frais_Engages = parseFloat(fraisMatch[1].replace(',', '.'));
-
-
+    // ... etc (voir ton exemple précédent)
     return parsedFields;
   };
 
-
   return (
     <div className={styles.ocrSection}>
-      
+      {/* --- Choix méthode OCR --- */}
       <div className={styles.radioGroup}>
         <label className={styles.radioLabel}>
-          <input 
-            type="radio" 
-            name="ocrMethod" 
-            value="gemini" 
-            checked={ocrMethod === 'gemini'} 
-            onChange={() => setOcrMethod('gemini')} 
-          />
-          IA Gemini (Recommandé)
+          <input type="radio" name="ocrMethod" value="gemini"
+            checked={ocrMethod === 'gemini'}
+            onChange={() => setOcrMethod('gemini')} />
+          IA Gemini (sécurisée)
         </label>
         <label className={styles.radioLabel}>
-          <input 
-            type="radio" 
-            name="ocrMethod" 
-            value="tesseract" 
-            checked={ocrMethod === 'tesseract'} 
-            onChange={() => setOcrMethod('tesseract')} 
-          />
+          <input type="radio" name="ocrMethod" value="tesseract"
+            checked={ocrMethod === 'tesseract'}
+            onChange={() => setOcrMethod('tesseract')} />
           Local (Tesseract.js)
         </label>
       </div>
-      
-      <div className={styles.controls}>
-        <label className={styles.uploadLabel}>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-          />
-          <span className={styles.uploadButton}>
-        
-          </span>
-        </label>
-
-        <button 
-          onClick={handleExtract} 
-          className={styles.extractButton}
-          disabled={!selectedFile || status.includes('en cours...') || status.includes('Chargement Tesseract...')}
-        >
-          {status.includes('en cours...') ? 'Analyse...' : 'Extraire'}
-        </button>
+      {/* --- Sélecteur de fichier --- */}
+      <div style={{ margin: '8px 0' }}>
+        <input type="file" accept="image/*" onChange={handleFileSelect} />
       </div>
-
-      {status && <div className={styles.status}>{status}</div>}
+      {/* --- Aperçu image --- */}
+      {previewUrl &&
+        <div style={{ marginBottom: 8 }}>
+          <img src={previewUrl} alt="Aperçu" style={{ maxWidth: 360, border: "2px solid #ccc", borderRadius: 8 }} />
+        </div>
+      }
+      {/* --- Anonymiser bouton --- */}
+      {selectedFile && (
+        <button onClick={handleAnonymize} className={styles.extractButton}
+          style={{ marginBottom: 6 }}>Anonymiser (Blur)</button>
+      )}
+      {/* --- Extraction OCR bouton --- */}
+      <button
+        onClick={ocrMethod === 'gemini' ? handleGeminiOCR : handleTesseractOCR}
+        className={styles.extractButton}
+        disabled={!(selectedFile || anonymizedBlob) || status.includes('en cours')}>
+        Envoyer à {ocrMethod === 'gemini' ? "Gemini" : "Tesseract"}
+      </button>
+      {/* --- Statut --- */}
+      {status && <div className={styles.status} style={{ marginTop: 4 }}>{status}</div>}
     </div>
   );
 };

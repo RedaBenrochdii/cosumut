@@ -1,0 +1,22 @@
+{
+  "dossiers": [
+    {
+      "N° Police": "",
+      "N° Adhésion": "",
+      "Matricule": "EMP005",
+      "Nom/Prénom": "Petit Thomas",
+      "Numéro dossier": "",
+      "Lien parenté": "",
+      "Montant": "777777777.00"
+    },
+    {
+      "N° Police": "",
+      "N° Adhésion": "",
+      "Matricule": "EMP002",
+      "Nom/Prénom": "Leroy Marie",
+      "Numéro dossier": "",
+      "Lien parenté": "",
+      "Montant": "23.00"
+    }
+  ]
+}

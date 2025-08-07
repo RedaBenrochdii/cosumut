@@ -1,0 +1,22 @@
+{
+  "dossiers": [
+    {
+      "N° Police": "601363402",
+      "N° Adhésion": "hhhhhhhhhhhh",
+      "Matricule": "8462",
+      "Nom/Prénom": "Hajar Soulaimani",
+      "Numéro dossier": "hhhhhhhhh",
+      "Lien parenté": "Lui-meme",
+      "Montant": "1199.99"
+    },
+    {
+      "N° Police": "60/363400",
+      "N° Adhésion": "hhhhhhhhhhhh",
+      "Matricule": "8462",
+      "Nom/Prénom": "Hajar Soulaimani",
+      "Numéro dossier": "hhhhhhhh",
+      "Lien parenté": "Lui-même",
+      "Montant": "1200.00"
+    }
+  ]
+}

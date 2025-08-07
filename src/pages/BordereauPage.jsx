@@ -3,6 +3,12 @@ import axios from 'axios';
 import styles from '../styles/BordereauPage.module.css'; // Importe les styles dédiés
 import { DataTable } from '../components/DataTable';
 import DailyConsumptionChart from '../components/DailyConsumptionChart';
+// Adresse et objet personnalisables
+const TO_EMAIL = "mutuelle@cosumar.co.ma";
+const MAIL_SUBJECT = encodeURIComponent("Transmission Bordereau Mutuelle");
+const MAIL_BODY = encodeURIComponent(
+  `Bonjour,\n\nVeuillez trouver ci-joint le bordereau de transmission généré automatiquement.\nN'oubliez pas de l'attacher en pièce jointe avant d'envoyer.\n\nCordialement,\nService RH`
+);
 
 export default function BordereauPage() {
   const [dossiers, setDossiers] = useState([]);
@@ -155,7 +161,7 @@ export default function BordereauPage() {
   };
 
 const exportBordereau = async () => {
-  if (!dossiers.length) {
+  if (!filteredDossiers.length) {
     setMessage('⚠️ Aucun dossier à exporter.');
     return;
   }
@@ -163,24 +169,24 @@ const exportBordereau = async () => {
     setLoading(true);
     setMessage('📤 Export en cours...');
 
-    // --- Mapping pour correspondre exactement aux colonnes de ton modèle ---
-    const donneesTableau = dossiers.map(item => [
-      item.NumeroPolice || '',                   // 1. N° Police
-      item.NumeroAdhesion || '',                 // 2. N° Adhésion
-      item.Matricule_Employe || '',              // 3. Matricule
-      (
-        (item.Nom_Malade ? item.Nom_Malade : '') +
-        (item.Prenom_Malade ? ' ' + item.Prenom_Malade : '')
-      ).trim(),                                  // 4. Nom/Prénom
-      item.NumeroDossier || '',                  // 5. Numéro dossier
-      item.Lien_Parente || '',                   // 6. Lien parenté
-      item.Montant || ''                         // 7. Montant
-    ]);
+    // Mapping automatique vers le format du bordereau Cosumar
+const dossiersCosumar = filteredDossiers.map(item => ({
+  "N° Police": item.Numero_Contrat || '',
+  "N° Adhésion": item.Numero_Affiliation || '',
+  "Matricule": item.Matricule_Employe || item.Matricule_Ste || '',
+  "Nom/Prénom": (item.Nom_Employe ? item.Nom_Employe : '') + (item.Prenom_Employe ? ' ' + item.Prenom_Employe : ''),
+  "Numéro dossier": item.Numero_Declaration || '',
+  "Lien parenté": item.Ayant_Droit || item.Lien_Parente || '',
+  "Montant": item.Montant || item.Total_Frais_Engages || ''
+}));
 
-    // --- Envoi au backend ---
+
+
+    // Envoi des dossiers sous forme d'un tableau d'objets
     const res = await axios.post(
       'http://localhost:4000/api/export-bordereau',
-      { donneesTableau } // clé attendue par le backend ExcelJS
+      dossiersCosumar, // C'est un tableau d'objets [{...},{...}]
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (res.data.success && res.data.filename) {
@@ -196,12 +202,13 @@ const exportBordereau = async () => {
     } else {
       setMessage('❌ Erreur lors de la génération du bordereau.');
     }
-  } catch {
+  } catch (e) {
     setMessage('❌ Erreur serveur.');
   } finally {
     setLoading(false);
   }
 };
+
 
 
   const handleDelete = idx => {
@@ -257,6 +264,7 @@ const exportBordereau = async () => {
         <button className={`${styles.button} ${styles.primaryButton}`} onClick={exportBordereau} disabled={loading || filteredDossiers.length === 0}>
           {loading ? 'Exportation...' : 'Exporter le Bordereau'}
         </button>
+        
       </fieldset>
 
       {/* Section Dossiers à Exporter */}

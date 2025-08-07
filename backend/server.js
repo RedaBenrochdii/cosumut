@@ -330,8 +330,9 @@ app.post('/api/employes/upload-excel', uploadExcel.single('excelFile'), async (r
 });
 
 
-// 📤 Export Excel + JSON bordereau
-// 📤 Export Excel bordereau - Génère fichier avec colonnes personnalisées
+// 📤 Export Excel bordereau - Génère fichier avec colonnes personnalisées Cosumar
+const ExcelJS = require('exceljs'); // Assure-toi de l'importer en haut du fichier
+
 app.post('/api/export-bordereau', async (req, res) => {
   try {
     const dossiers = req.body;
@@ -342,36 +343,38 @@ app.post('/api/export-bordereau', async (req, res) => {
     const filename = `bordereau_${now.toISOString().slice(0, 19).replace(/[:T]/g, "-")}.xlsx`;
     const filepath = path.join(bordereauxDir, filename);
 
-    // Ordre et titres des colonnes (ceux affichés dans l'image)
-    const COLONNES = [
-      "N° Police",
-      "N° Adhésion",
-      "Matricule",
-      "Nom/Prénom",
-      "Numéro dossier",
-      "Lien parenté",
-      "Montant"
-    ];
+    // Charger le template
+    const templatePath = path.join(__dirname, 'templates', 'template_bordereau.xlsx');
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(templatePath);
 
-    // Génère les données à exporter (tableau d'objets → tableau d'arrays)
-    const donneesExport = [COLONNES]
-      .concat(dossiers.map(item => COLONNES.map(col => item[col] || "")));
+    // Prend la première feuille (ou adapte getWorksheet)
+    const worksheet = workbook.getWorksheet('Feuil1');
 
-    // Utilise XLSX pour écrire le fichier Excel
-    const ws = XLSX.utils.aoa_to_sheet(donneesExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bordereau");
-    XLSX.writeFile(wb, filepath);
+    // 📌 ADAPTE LA LIGNE DE DÉPART SI BESOIN ! Ici ligne 4 :
+    let rowIndex = 4;
 
-    // Enregistre aussi le JSON (optionnel, comme avant)
+    dossiers.forEach(d => {
+      worksheet.getRow(rowIndex).getCell(1).value = d["N° Police"] || d.Numero_Contrat || "";
+      worksheet.getRow(rowIndex).getCell(2).value = d["N° Adhésion"] || d.Numero_Affiliation || "";
+      worksheet.getRow(rowIndex).getCell(3).value = d["Matricule"] || d.Matricule_Employe || d.Matricule_Ste || "";
+      worksheet.getRow(rowIndex).getCell(4).value = d["Nom/Prénom"] || `${d.Nom_Employe || ''} ${d.Prenom_Employe || ''}`.trim();
+      worksheet.getRow(rowIndex).getCell(5).value = d["Numéro dossier"] || d.Numero_Declaration || "";
+      worksheet.getRow(rowIndex).getCell(6).value = d["Lien parenté"] || d.Lien_Parente || d.Ayant_Droit || "";
+      worksheet.getRow(rowIndex).getCell(7).value = d["Montant"] || d.Montant || d.Total_Frais_Engages || "";
+      rowIndex++;
+    });
+
+    await workbook.xlsx.writeFile(filepath);
+
+    // --- Historique JSON et synthétique ---
     const jsonFilename = filename.replace('.xlsx', '.json');
     const jsonPath = path.join(bordereauxDir, jsonFilename);
     const jsonData = { dossiers };
     await fs.writeJson(jsonPath, jsonData, { spaces: 2 });
 
-    // Historique (comme avant)
     const nbDossiers = dossiers.length;
-    const total = dossiers.reduce((sum, d) => sum + parseFloat(d["Montant"] || 0), 0).toFixed(2);
+    const total = dossiers.reduce((sum, d) => sum + parseFloat(d["Montant"] || d.Montant || 0), 0).toFixed(2);
 
     const historique = fs.existsSync(bordereauxHistoryFile)
       ? fs.readJsonSync(bordereauxHistoryFile)
@@ -388,10 +391,11 @@ app.post('/api/export-bordereau', async (req, res) => {
 
     res.json({ success: true, filename });
   } catch (err) {
-    console.error("❌ Erreur export bordereau :", err);
-    res.status(500).json({ error: "Erreur export bordereau" });
+    console.error("❌ Erreur export bordereau (template) :", err);
+    res.status(500).json({ error: "Erreur export bordereau (template)" });
   }
 });
+
 
 
 // 📜 Historique unifié des bordereaux

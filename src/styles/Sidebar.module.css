@@ -75,11 +75,16 @@
   box-shadow: 0 4px 10px rgba(34, 5, 222, 0.1);
 }
 
-.menu li.active {
+/* Styles pour le lien actif */
+.menu li:has(a.active) {
   font-weight: bold;
+  /* Utilisation d'un dégradé simple pour l'effet */
+  background: linear-gradient(to right, rgba(7, 92, 229, 0.2), transparent);
+}
+
+.menu li a.active {
   color: #3b82f6;
-  background-color: rgba(7, 92, 229, 0.2);
-  border-left: 4px solid #0814ea;
+  border-left: 3.2px solid #fff202; /* Ajoute une bordure pour un effet plus marqué */
 }
 
 .menu li a,
@@ -87,7 +92,7 @@
   text-decoration: none;
   color: inherit;
   font-size: 1.1rem;
-  font-weight: 500; /* ✅ Gras uniforme pour TOUS */
+  font-weight: 500;
   display: block;
   width: 100%;
   background: none;
@@ -95,7 +100,7 @@
   text-align: left;
   padding: 0;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, border-left 0.3s ease;
 }
 
 .menu li a:hover,

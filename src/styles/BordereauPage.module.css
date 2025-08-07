@@ -478,3 +478,12 @@ body.dark-mode .formGroup label {
     font-size: 0.8rem;
   }
 }
+@media print {
+  .sidebar, .navbar, .footer {
+    display: none !important;
+  }
+  body, .main, .container {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}
