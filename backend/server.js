@@ -5,7 +5,7 @@ if (!process.env.GEMINI_API_KEY) {
   process.exit(1);
 }
 
-const storage = require('./services/storage');
+const dataStorage = require('./services/storage');
 // 🌐 Dépendances
 const express = require('express');
 const cors = require('cors');
@@ -44,6 +44,28 @@ fs.ensureDirSync(bordereauxDir);
 app.use('/uploads', express.static(uploadDir));
 app.use('/bordereaux', express.static(bordereauxDir));
 
+app.get('/api/storage/stats', async (req, res) => {
+  try {
+    const isSqlite = (process.env.STORAGE_DRIVER || 'json').toLowerCase() === 'sqlite';
+    if (isSqlite) {
+      const Database = require('better-sqlite3');
+      const db = new Database(process.env.DB_PATH || './data/cosumutuel.db', { readonly: true });
+      const count = (sql) => db.prepare(sql).get().count;
+      res.json({
+        employes: count('SELECT COUNT(*) AS count FROM employes'),
+        famille:  count('SELECT COUNT(*) AS count FROM famille'),
+        dossiers: count('SELECT COUNT(*) AS count FROM dossiers')
+      });
+    } else {
+      const emp = await dataStorage.employes.list();
+      const dos = await (dataStorage.dossiers.list?.() || []);
+      res.json({ employes: emp.length, famille: 0, dossiers: dos.length });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ▼▼▼ ROUTE DE CONNEXION MISE À JOUR AVEC BCRYPT ▼▼▼
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
@@ -71,6 +93,13 @@ app.post('/api/login', (req, res) => {
     console.error("Erreur lors de la lecture du fichier utilisateurs :", error);
     res.status(500).json({ success: false, message: "Erreur serveur" });
   }
+});
+// --- à coller dans server.js (backend) ---
+app.get('/api/storage/driver', (req, res) => {
+  res.json({
+    driver: process.env.STORAGE_DRIVER || 'json',
+    dbPath: process.env.DB_PATH || null
+  });
 });
 
 // 📋 Employés

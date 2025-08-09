@@ -2,11 +2,18 @@
   "name": "cosumutuel-backend",
   "version": "1.0.0",
   "main": "server.js",
-  "scripts": {
+  "engines": {
+    "node": ">=18"
+  },
+ "scripts": {
+    "start": "node server.js",
     "dev": "nodemon server.js",
+    "start:dev": "npm-run-all --parallel watch dev",
+    "watch": "chokidar \"bordereaux/*.json\" -c \"node mergeDossiers.js\"",
     "merge": "node mergeDossiers.js",
-    "watch": "chokidar \"./backend/bordereaux/*.json\" -c \"node mergeDossiers.js\"",
-    "start": "npm-run-all --parallel watch dev"
+    "migrate:json": "node scripts/migrate-json-to-sqlite.js",
+    "test": "echo \"(tests backend à ajouter: jest/supertest)\" && exit 0",
+    "lint": "echo \"(eslint backend optionnel)\" && exit 0"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -21,6 +28,7 @@
     "sharp": "^0.34.2"
   },
   "devDependencies": {
+    "chokidar-cli": "^3.0.0",
     "node-cron": "^3.0.2",
     "nodemon": "^2.0.22",
     "npm-run-all": "^4.1.5"
