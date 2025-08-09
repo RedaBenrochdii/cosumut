@@ -5,6 +5,7 @@ if (!process.env.GEMINI_API_KEY) {
   process.exit(1);
 }
 
+const storage = require('./services/storage');
 // 🌐 Dépendances
 const express = require('express');
 const cors = require('cors');
