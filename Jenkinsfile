@@ -1,5 +1,6 @@
 pipeline {
   agent any
+  options { timestamps() }
   environment {
     CI = 'true'
     npm_config_fund  = 'false'
@@ -22,7 +23,8 @@ pipeline {
     stage('Backend - Install & Test') {
       steps {
         dir('backend') {
-          bat 'if exist package-lock.json (npm ci) else (npm install)'
+          // Forcer npm install (tolérant) au lieu de npm ci
+          bat 'echo BACKEND: npm install && npm install --no-audit --no-fund'
           bat 'npm run test || exit /b 0'
         }
       }
@@ -30,7 +32,8 @@ pipeline {
 
     stage('Frontend - Install, Test & Build') {
       steps {
-        bat 'if exist package-lock.json (npm ci) else (npm install)'
+        // Tente npm ci sinon bascule npm install
+        bat 'npm ci || npm install --no-audit --no-fund'
         bat 'npm run test || exit /b 0'
         bat 'npm run build'
       }
