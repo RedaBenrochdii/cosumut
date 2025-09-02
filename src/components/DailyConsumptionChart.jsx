@@ -1,3 +1,4 @@
+// src/components/DailyConsumptionChart.jsx
 import React, { useState, useMemo } from 'react';
 import {
   ResponsiveContainer,
@@ -41,6 +42,25 @@ export default function DailyConsumptionChart({ data }) {
         Rembourse: +(Montant * 0.8).toFixed(2)
       }));
   }, [data, filterType, selectedYear, selectedMonth, startDate, endDate]);
+
+  // 🛠️ Fonction de formatage de la date en "JJ/MM"
+  const formatDate = (dateString) => {
+    const date = dayjs(dateString);
+    if (!date.isValid()) {
+      return '';
+    }
+    // Formatte en "JJ/MM" (e.g., 30/08)
+    return date.format('DD/MM');
+  };
+
+  // 🛠️ Fonction de formatage de la date en "JJ/MM/AAAA" pour le tooltip
+  const formatTooltipLabel = (dateString) => {
+    const date = dayjs(dateString);
+    if (!date.isValid()) {
+      return '';
+    }
+    return date.format('DD/MM/YYYY');
+  };
 
   return (
     <div style={{ width: '100%' }}>
@@ -96,9 +116,17 @@ export default function DailyConsumptionChart({ data }) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={str => str.slice(5)} />
+            
+            {/* ✅ Correction pour l'axe X : affiche "JJ/MM" */}
+            <XAxis dataKey="date" tickFormatter={formatDate} />
             <YAxis />
-            <Tooltip formatter={value => `${value} MAD`} />
+            
+            {/* ✅ Correction pour le Tooltip : affiche "JJ/MM/AAAA" */}
+            <Tooltip 
+              formatter={value => `${value} MAD`} 
+              labelFormatter={formatTooltipLabel} 
+            />
+            
             <Legend />
             <Bar dataKey="Montant" name="Montant total (MAD)" fill="#3b82f6" barSize={30} />
             <Bar dataKey="Rembourse" name="Montant remboursé (80%)" fill="url(#rembourseGradient)" barSize={30} />

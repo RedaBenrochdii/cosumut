@@ -1,21 +1,40 @@
+# syntax=docker/dockerfile:1
 
-# Étape 1: Utiliser une image Node.js officielle et légère
-FROM node:18-alpine AS base
-
-# Définir le répertoire de travail dans le conteneur
+# ---- Build stage (compile native deps: better-sqlite3) ----
+FROM node:20-bookworm-slim AS build
 WORKDIR /usr/src/app
 
-# Copier les fichiers de dépendances
+# Outils pour node-gyp
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 make g++ pkg-config \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
+# Utilise le lockfile si présent
+RUN npm ci --no-audit --no-fund
 
-# Installer uniquement les dépendances de production
-RUN npm install --production
-
-# Copier le reste des fichiers de l'application
+# Copie du code
 COPY . .
+# Garde uniquement les deps de prod
+RUN npm prune --omit=dev
 
-# Exposer le port sur lequel le serveur écoute
+# ---- Runtime stage (glibc stable) ----
+FROM node:20-bookworm-slim AS runtime
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+
+# curl utile pour debug
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copie deps + code
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app ./
+
+# Dossiers requis par ton serveur
+RUN mkdir -p data uploads bordereaux templates
+
 EXPOSE 4000
-
-# Commande pour démarrer le serveur
-CMD [ "node", "server.js" ]
+# ⛔️ pas de healthcheck bloquant ici
+CMD ["node", "server.js"]

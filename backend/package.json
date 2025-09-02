@@ -2,10 +2,8 @@
   "name": "cosumutuel-backend",
   "version": "1.0.0",
   "main": "server.js",
-  "engines": {
-    "node": ">=18"
-  },
- "scripts": {
+  "engines": { "node": ">=18" },
+  "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "start:dev": "npm-run-all --parallel watch dev",
@@ -16,16 +14,20 @@
     "lint": "echo \"(eslint backend optionnel)\" && exit 0"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.2.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "fs-extra": "^11.3.0",
     "image-hash": "^5.3.2",
     "mssql": "^11.0.1",
     "multer": "^1.4.5-lts.1",
     "pkg": "^5.8.1",
-    "sharp": "^0.34.2"
+    "sharp": "^0.34.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
@@ -35,12 +37,8 @@
   },
   "bin": "server.js",
   "pkg": {
-    "scripts": [
-      "server.js"
-    ],
-    "targets": [
-      "node18-win-x64"
-    ],
+    "scripts": ["server.js"],
+    "targets": ["node18-win-x64"],
     "outputPath": "dist"
   }
 }

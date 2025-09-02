@@ -1,54 +1,32 @@
-version: '3.8'
-
 services:
-
   backend:
-
     build:
-
-      context: ./backend # Chemin vers le Dockerfile du backend
-
+      context: ./backend
       dockerfile: Dockerfile
-
-    ports:
-
-      - "4000:4000" # Mappe le port 4000 du conteneur au port 4000 de votre machine
-
-    volumes:
-
-      # Monte les dossiers de données pour que les fichiers ne soient pas perdus au redémarrage
-
-      - ./backend/data:/usr/src/app/data
-
-      - ./backend/uploads:/usr/src/app/uploads
-
-      - ./backend/bordereaux:/usr/src/app/bordereaux
-
-      - ./backend/documents.json:/usr/src/app/documents.json
-
-      - ./backend/history.json:/usr/src/app/history.json
-
     env_file:
-
-      - ./backend/.env # Charge les variables d'environnement (ex: GEMINI_API_KEY)
-
+      - ./backend/.env
+    environment:
+      - STORAGE_DRIVER=${STORAGE_DRIVER:-sqlite}
+      - DB_PATH=${DB_PATH:-data/cosumutuel.db}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/data:/usr/src/app/data
+      - ./backend/uploads:/usr/src/app/uploads
+      - ./backend/bordereaux:/usr/src/app/bordereaux
+      - ./backend/documents.json:/usr/src/app/documents.json
+      - ./backend/history.json:/usr/src/app/history.json
+      - ./backend/templates:/usr/src/app/templates
     restart: unless-stopped
 
   frontend:
-
     build:
-
-      context: . # Chemin vers le Dockerfile du frontend (racine)
-
+      context: .
       dockerfile: Dockerfile
-
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
     ports:
-
-      - "5173:80" # Mappe le port 80 du conteneur au port 5173 de votre machine
-
+      - "5173:80"   # http://localhost:5173
     depends_on:
-
-      - backend # S'assure que le backend est démarré avant le frontend
-
+      - backend     # ordre de démarrage simple
     restart: unless-stopped
- 

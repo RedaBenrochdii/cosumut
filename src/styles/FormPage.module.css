@@ -441,3 +441,16 @@ body.dark-mode .modalContent {
     width: 100%;
   }
 }
+/* 🔴 Bordure d’erreur pour l’input âge */
+.inputError {
+  border: 2px solid #dc2626 !important;      /* rouge 600 */
+  background-color: #fee2e2 !important;      /* rouge 100 */
+  outline: none;
+}
+
+/* Petit message discret sous le champ */
+.inlineWarning {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #b91c1c; /* rouge 700 */
+}

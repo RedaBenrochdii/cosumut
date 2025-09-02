@@ -1,6 +1,12 @@
 pipeline {
   agent any
-  options { timestamps() }
+
+  options {
+    timestamps()
+    // Évite qu’un stage ne reste bloqué éternellement
+    timeout(time: 30, unit: 'MINUTES')
+  }
+
   environment {
     CI = 'true'
     npm_config_fund  = 'false'
@@ -9,22 +15,27 @@ pipeline {
   }
 
   stages {
+
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkout scm
+        echo "Branche: ${env.BRANCH_NAME ?: 'main'}"
+      }
     }
 
-    stage('Versions') {
+    stage('Versions Node/npm') {
       steps {
         bat 'node -v'
         bat 'npm -v'
       }
     }
 
-    stage('Backend - Install & Test') {
+    stage('Backend - Install & Tests (tolérant)') {
       steps {
         dir('backend') {
-          // Forcer npm install (tolérant) au lieu de npm ci
+          // lockfile pas toujours synchro -> npm install tolérant
           bat 'echo BACKEND: npm install && npm install --no-audit --no-fund'
+          // tests non bloquants tant que tu n’en as pas
           bat 'npm run test || exit /b 0'
         }
       }
@@ -32,23 +43,38 @@ pipeline {
 
     stage('Frontend - Install, Test & Build') {
       steps {
-        // Tente npm ci sinon bascule npm install
+        // FRONTEND À LA RACINE du repo
+        // tente npm ci (plus rapide/reproductible), sinon bascule npm install
         bat 'npm ci || npm install --no-audit --no-fund'
         bat 'npm run test || exit /b 0'
         bat 'npm run build'
       }
     }
 
-    stage('Archive artefacts') {
+    stage('Archive artefacts (dist)') {
       steps {
+        // Si ton build sort ailleurs (ex: build/**), change le pattern
         archiveArtifacts artifacts: 'dist/**', fingerprint: true, allowEmptyArchive: false
       }
     }
   }
 
   post {
-    success { echo '✅ Build OK (backend + frontend)' }
-    failure { echo '❌ Échec : voir la console' }
-    always  { cleanWs() }
+    success {
+      echo '✅ Build OK (backend + frontend).'
+    }
+    failure {
+      echo '❌ Échec : ouvre la Console Output, regarde la dernière étape rouge.'
+    }
+    always {
+      // Nettoyage pour éviter les caches entre builds
+      cleanWs()
+    }
+  }
+}
+stage('POC: Docker up') {
+  steps {
+    bat 'docker --version'
+    bat 'docker compose -f docker-compose.yml up -d --build'
   }
 }

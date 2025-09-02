@@ -20,7 +20,7 @@ export default function Home() {
   className={`${styles.enterButton} ${styles.bottomButton}`}
   onClick={() => (window.location.href = '/form')}
 >
-  Remplire le formulaire
+  Remplir le formulaire
 </button>
 
       </div>

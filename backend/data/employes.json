@@ -1,12 +1,111 @@
 [
   {
-    "Matricule_Employe": "7777",
-    "Nom_Employe": "Benrochdi",
-    "Prenom_Employe": "Reda",
-    "DateNaissance": "1970-01-01",
-    "Famille": [],
-    "Numero_Contrat": "60/875800",
-    "Numero_Affiliation": "7777",
-    "Nom_Prenom_Assure": ""
+    "Matricule_Employe": "002001S",
+    "Nom_Employe": "HALABI",
+    "Prenom_Employe": "MOHEMED",
+    "DateNaissance": "1960-12-31",
+    "Numero_Contrat": "60/363400",
+    "Numero_Affiliation": "2514875",
+    "Nom_Prenom_Assure": "",
+    "Famille": [
+      {
+        "type": "conjoint",
+        "nom": "NASSIRI",
+        "prenom": "SIHAM",
+        "DateNaissance": "1979-05-04"
+      },
+      {
+        "type": "enfant",
+        "nom": "HALABI",
+        "prenom": "AMINE",
+        "DateNaissance": "1998-08-23"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "8462",
+    "Nom_Employe": "HIMNI",
+    "Prenom_Employe": "REDA",
+    "DateNaissance": "1967-12-31",
+    "Numero_Contrat": "60/363400",
+    "Numero_Affiliation": "2514875",
+    "Nom_Prenom_Assure": "",
+    "Famille": [
+      {
+        "type": "conjoint",
+        "nom": "BENANI SMIRS",
+        "prenom": "NASSIRA",
+        "DateNaissance": "1975-08-05"
+      },
+      {
+        "type": "enfant",
+        "nom": "HIMNI",
+        "prenom": "ADAM",
+        "DateNaissance": "2000-02-10"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "005487S",
+    "Nom_Employe": "RAJAOUI",
+    "Prenom_Employe": "AHMED",
+    "DateNaissance": "+024307-12-31",
+    "Numero_Contrat": "60/349600",
+    "Numero_Affiliation": "5248741",
+    "Nom_Prenom_Assure": "",
+    "Famille": [
+      {
+        "type": "conjoint",
+        "nom": "ZAKI",
+        "prenom": "KARIMA",
+        "DateNaissance": "1985-12-27"
+      },
+      {
+        "type": "enfant",
+        "nom": "RAJAOUI",
+        "prenom": "AMINE",
+        "DateNaissance": "2010-07-20"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "001234S",
+    "Nom_Employe": "DANDOUN",
+    "Prenom_Employe": "MUSTAPHA",
+    "DateNaissance": "1980-12-31",
+    "Numero_Contrat": "60/349600",
+    "Numero_Affiliation": "2589637",
+    "Nom_Prenom_Assure": "",
+    "Famille": [
+      {
+        "type": "conjoint",
+        "nom": "FILALI",
+        "prenom": "RAHMA",
+        "DateNaissance": "1985-08-15"
+      },
+      {
+        "type": "enfant",
+        "nom": "DANDOUN",
+        "prenom": "OUALID",
+        "DateNaissance": "2000-05-13"
+      }
+    ]
+  },
+  {
+    "Matricule_Employe": "007085S",
+    "Nom_Employe": "RIAHI",
+    "Prenom_Employe": "MANAR",
+    "DateNaissance": "1994-05-28",
+    "Numero_Contrat": "60/349600",
+    "Numero_Affiliation": "2598745",
+    "Nom_Prenom_Assure": "",
+    "Famille": []
+  },
+  {
+    "Matricule_Employe": "84625",
+    "Nom_Employe": "Benrouchdi",
+    "Prenom_Employe": "reda",
+    "DateNaissance": "2011-07-14",
+    "Famille": []
   }
 ]

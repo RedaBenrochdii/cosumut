@@ -2,7 +2,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import styles from '../styles/FormPage.module.css';
-import OCRManualMask from '../components/OCRManualMask';
+import OCRAnonymizer from "../components/OCRAnonymizer";
+
+// ⚠️ NE PAS utiliser process.env avec Vite
+const API_BASE =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE)
+  || 'http://localhost:4000';
+
+const api = axios.create({ baseURL: API_BASE });
+
+const AGE_LIMIT = 25; // ✅ Seuil d’alerte visuelle pour les ENFANTS
 
 // État initial des champs du formulaire
 const INITIAL_FORM_STATE = {
@@ -30,22 +39,34 @@ export default function FormPage() {
   const [showAlertDialog, setShowAlertDialog] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedFamilyMember, setSelectedFamilyMember] = useState('');
+  const [submitting, setSubmitting] = useState(false); // 👈 anti double-clic
+  const [ocrEngine, setOcrEngine] = useState('gemini'); // 'gemini', 'paddle', 'tesseract'
 
+  /* =========================
+     UI: Dark Mode
+  ========================== */
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
     localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
 
+  /* =========================
+     Charger employés (API)
+  ========================== */
   useEffect(() => {
-    axios.get('http://localhost:4000/api/employes')
+    api.get('/api/employes')
       .then(res => setEmployesData(res.data))
       .catch(err => console.error('Erreur chargement employés :', err));
   }, []);
 
+  /* =========================
+     Helpers
+  ========================== */
   const calculateAge = useCallback((birthDateStr) => {
     if (!birthDateStr) return '';
-    const today = new Date();
     const birthDate = new Date(birthDateStr);
+    if (Number.isNaN(birthDate.getTime())) return '';
+    const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
@@ -85,7 +106,6 @@ export default function FormPage() {
       if (selectedChild) {
         nomMalade = selectedChild.nom || '';
         prenomMalade = selectedChild.prenom || '';
-        // dans les données enfants c'est souvent "dateNaissance"
         const dn = selectedChild.dateNaissance || selectedChild.DateNaissance;
         ageMalade = calculateAge(dn);
       }
@@ -138,7 +158,6 @@ export default function FormPage() {
         Nom_Prenom_Assure: `${emp.Nom_Employe || ''} ${emp.Prenom_Employe || ''}`.trim(),
       }));
 
-      // actualise le malade en fonction du lien courant
       updateMaladeFields(emp, formData.Lien_Parente || 'Lui-meme', selectedFamilyMember);
 
       const age = calculateAge(emp.DateNaissance);
@@ -156,7 +175,6 @@ export default function FormPage() {
         ...prev,
         Numero_Contrat: '',
         Numero_Affiliation: '',
-        Nom_Prenom_Assure: field === 'Nom_Prenom_Assure' ? value : '',
         Nom_Prenom_Malade: '',
         Age_Malade: '',
       }));
@@ -166,15 +184,18 @@ export default function FormPage() {
     }
   }, [employesData, formData.Lien_Parente, selectedFamilyMember, updateMaladeFields, calculateAge]);
 
+  /* =========================
+     Handlers formulaire
+  ========================== */
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     const evaluateExpression = (expression) => {
       try {
         const sanitizedExpression = expression.replace(/[^0-9+\-*/.]/g, '');
-        // NOTE: ceci reste un mini-évaluateur. Si tu veux 0 risque, retire-le.
+        // eslint-disable-next-line no-new-func
         const result = new Function('return ' + sanitizedExpression)();
-        return isFinite(result) ? result.toString() : value;
+        return Number.isFinite(result) ? result.toString() : value;
       } catch {
         return value;
       }
@@ -249,11 +270,17 @@ export default function FormPage() {
     setShowConfirmModal(true);
   };
 
-  const confirmSubmission = () => {
+  /* =========================
+     Soumission → API / DB + localStorage
+  ========================== */
+  const confirmSubmission = async () => {
     setShowConfirmModal(false);
+    if (submitting) return;
+    setSubmitting(true);
 
     const currentFormList = JSON.parse(localStorage.getItem('formList') || '[]');
 
+    // Reconstitue nom/prénom employé
     let nomEmploye = '';
     let prenomEmploye = '';
     if (selectedEmployee) {
@@ -265,6 +292,7 @@ export default function FormPage() {
       prenomEmploye = parts.slice(1).join(' ') || '';
     }
 
+    // Reconstitue nom/prénom malade
     let nomMalade = '';
     let prenomMalade = '';
     if (formData.Lien_Parente === 'Lui-meme' && selectedEmployee) {
@@ -289,38 +317,58 @@ export default function FormPage() {
       prenomMalade = parts.slice(1).join(' ') || '';
     }
 
+    // Payload envoyé au backend (inclut Nature_Maladie)
     const dossierToSave = {
-      DateConsultation: formData.Date_Consultation,
-      Numero_Contrat: formData.Numero_Contrat,
-      Numero_Affiliation: formData.Numero_Affiliation,
-      Matricule_Employe: formData.Matricule_Ste,
-      Nom_Employe: nomEmploye,
-      Prenom_Employe: prenomEmploye,
-      Nom_Malade: nomMalade,
-      Prenom_Malade: prenomMalade,
-      Type_Malade: formData.Type_Declaration,
-      Montant: parseFloat(formData.Total_Frais_Engages || 0).toFixed(2),
-      Montant_Rembourse: '0.00',
+      DateConsultation: formData.Date_Consultation || null,
+      Numero_Contrat: formData.Numero_Contrat || null,
+      Numero_Affiliation: formData.Numero_Affiliation || null,
+      Matricule_Employe: formData.Matricule_Ste || null,
+      Nom_Employe: nomEmploye || null,
+      Prenom_Employe: prenomEmploye || null,
+      Nom_Malade: nomMalade || null,
+      Prenom_Malade: prenomMalade || null,
+      Type_Malade: formData.Type_Declaration || null,
+      Nature_Maladie: (formData.Nature_Maladie || '').trim(),
+      Montant: Number.parseFloat(formData.Total_Frais_Engages || 0) || 0,
+      Montant_Rembourse: 0,
       Code_Assurance: '',
-      Numero_Declaration: formData.Numero_Declaration,
-      Ayant_Droit: formData.Lien_Parente,
+      Numero_Declaration: formData.Numero_Declaration || null,
+      Ayant_Droit: formData.Lien_Parente || null,
     };
 
-    const updatedFormList = [...currentFormList, dossierToSave];
-    localStorage.setItem('formList', JSON.stringify(updatedFormList));
+    try {
+      // 🔗 1) Enregistrement DB
+      const res = await api.post('/api/dossiers', dossierToSave);
+      if (!res.data?.success) throw new Error('Réponse inattendue');
 
-    setAlertMessage('Formulaire envoyé avec succès et dossier ajouté au bordereau !');
-    setShowAlertDialog(true);
+      // 💾 2) Ajout au bordereau local (utilisé par BordereauPage)
+      const updatedFormList = [...currentFormList, dossierToSave];
+      localStorage.setItem('formList', JSON.stringify(updatedFormList));
 
-    setFormData(INITIAL_FORM_STATE);
-    setBlockSubmit(false);
-    setSelectedEmployee(null);
-    setSelectedFamilyMember('');
+      // 🔔 3) Notifier les autres vues (BordereauPage peut écouter cet event)
+      window.dispatchEvent(new CustomEvent('formList:updated', { detail: { count: updatedFormList.length } }));
+
+      setAlertMessage('✅ Dossier enregistré et ajouté au bordereau.');
+      setShowAlertDialog(true);
+
+      // reset du formulaire
+      setFormData(INITIAL_FORM_STATE);
+      setBlockSubmit(false);
+      setSelectedEmployee(null);
+      setSelectedFamilyMember('');
+    } catch (e) {
+      console.error(e);
+      setAlertMessage("❌ Échec d'enregistrement en base. Vérifie que le serveur tourne et que STORAGE_DRIVER=sqlite (ou MSSQL).");
+      setShowAlertDialog(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // --- Helpers normalisation Gemini
+  /* =========================
+     Helpers OCR (Gemini)
+  ========================== */
   const toInputDate = (s='') => {
-    // Convertit "JJ/MM/AAAA" -> "AAAA-MM-JJ" pour <input type="date">
     const m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
     if (!m) return s;
     const jj = m[1].padStart(2,'0');
@@ -335,21 +383,43 @@ export default function FormPage() {
     if (t.includes('enfant')) return 'Enfants';
     return '';
   };
+  const extractNumeroDeclaration = (obj = {}) => {
+    const cands = [
+      obj.Numero_Declaration,
+      obj["Numéro dossier"],
+      obj.numero_dossier,
+      obj.numeroDossier,
+      obj.DeclarationHeader,
+      obj.Top_Declaration,
+      obj.declaration_header,
+      obj.declaration_en_tete,
+    ];
+    for (const v of cands) {
+      if (!v) continue;
+      const m = String(v).match(/\d{6,}/); // 6+ chiffres
+      if (m) return m[0];
+    }
+    const all = Object.values(obj).filter(v => typeof v === "string").join(" | ");
+    const m = all.match(/declar\w*\s+de\s+mala\w*\s*:\s*([0-9]{6,})/i);
+    return m ? m[1] : "";
+  };
 
   // ⚡ Appelé automatiquement après anonymisation + OCR Gemini
   const handleAutoFillOCR = (extracted) => {
-    // 1) normalisations
     const patch = { ...extracted };
+
     if (patch.Date_Consultation) {
       patch.Date_Consultation = toInputDate(patch.Date_Consultation);
     }
     if (patch.Lien_Parente) {
       patch.Lien_Parente = normalizeLien(patch.Lien_Parente);
     }
+    if (!patch.Numero_Declaration) {
+      patch.Numero_Declaration = extractNumeroDeclaration(extracted);
+    }
 
     setFormData(prev => ({ ...prev, ...patch }));
 
-    // 2) déclencher l'auto-fill employé selon les infos Gemini
     const matricule = patch.Matricule_Ste?.trim();
     const nomAssure = patch.Nom_Prenom_Assure?.trim();
     if (matricule) {
@@ -359,6 +429,16 @@ export default function FormPage() {
     }
   };
 
+  /* =========================
+     Déductions UI
+  ========================== */
+  const isChildOverOrAt25 =
+    String(formData.Lien_Parente) === 'Enfants' &&
+    Number(formData.Age_Malade) >= AGE_LIMIT;
+
+  /* =========================
+     Render
+  ========================== */
   return (
     <div className={styles.container}>
       <div className={styles.darkModeToggle}>
@@ -373,10 +453,25 @@ export default function FormPage() {
       <h1 className={styles.formTitle}>Déclaration de Maladie</h1>
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        {/* 1) Scan + anonymisation + OCR (Gemini) */}
+        {/* 1) Scan + anonymisation + OCR (choix moteur) */}
         <fieldset className={styles.formSection}>
           <legend className={styles.sectionTitle}>Scan de Document (OCR)</legend>
-          <OCRManualMask onAutoExtract={handleAutoFillOCR} />
+          <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+            <label htmlFor="ocrEngine">Moteur OCR :</label>
+            <select
+              id="ocrEngine"
+              name="ocrEngine"
+              value={ocrEngine}
+              onChange={e => setOcrEngine(e.target.value)}
+              className={styles.inputField}
+              style={{ maxWidth: 200 }}
+            >
+              <option value="gemini">Gemini (IA Google)</option>
+              <option value="paddle">PaddleOCR (local)</option>
+              <option value="tesseract">Tesseract.js (local)</option>
+            </select>
+          </div>
+          <OCRAnonymizer onAutoExtract={handleAutoFillOCR} ocrEngine={ocrEngine} />
         </fieldset>
 
         {/* 2) Numéro du Dossier */}
@@ -398,18 +493,34 @@ export default function FormPage() {
         {/* 3) Informations Assuré */}
         <fieldset className={styles.formSection}>
           <legend className={styles.sectionTitle}>Informations Assuré</legend>
+
+          {/* Matricule en premier */}
           <div className={styles.formGroup}>
-            <label htmlFor="Numero_Contrat">N° du contrat :</label>
+            <label htmlFor="Matricule_Ste">Matricule Ste :</label>
             <input
               type="text"
-              id="Numero_Contrat"
-              name="Numero_Contrat"
-              value={formData.Numero_Contrat}
+              id="Matricule_Ste"
+              name="Matricule_Ste"
+              value={formData.Matricule_Ste}
               onChange={handleChange}
               className={styles.inputField}
+              autoFocus
             />
           </div>
+
+          {/* N° du contrat + N° affiliation */}
           <div className={styles.formGroup + ' ' + styles.inputGroup}>
+            <div className={styles.inputFieldHalf}>
+              <label htmlFor="Numero_Contrat">N° du contrat :</label>
+              <input
+                type="text"
+                id="Numero_Contrat"
+                name="Numero_Contrat"
+                value={formData.Numero_Contrat}
+                onChange={handleChange}
+                className={styles.inputField}
+              />
+            </div>
             <div className={styles.inputFieldHalf}>
               <label htmlFor="Numero_Affiliation">N° affiliation :</label>
               <input
@@ -421,18 +532,8 @@ export default function FormPage() {
                 className={styles.inputField}
               />
             </div>
-            <div className={styles.inputFieldHalf}>
-              <label htmlFor="Matricule_Ste">Matricule Ste :</label>
-              <input
-                type="text"
-                id="Matricule_Ste"
-                name="Matricule_Ste"
-                value={formData.Matricule_Ste}
-                onChange={handleChange}
-                className={styles.inputField}
-              />
-            </div>
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="Nom_Prenom_Assure">Nom et prénom de l'assuré :</label>
             <input
@@ -477,6 +578,7 @@ export default function FormPage() {
               value={formData.Total_Frais_Engages}
               onChange={handleChange}
               className={styles.inputField}
+              placeholder="ex: 120+80.5*2"
             />
           </div>
 
@@ -544,7 +646,11 @@ export default function FormPage() {
               value={formData.Nom_Prenom_Malade}
               onChange={handleChange}
               className={styles.inputField}
-              readOnly={formData.Lien_Parente === 'Lui-meme' || formData.Lien_Parente === 'Conjoint' || (formData.Lien_Parente === 'Enfants' && selectedFamilyMember !== '')}
+              readOnly={
+                formData.Lien_Parente === 'Lui-meme' ||
+                formData.Lien_Parente === 'Conjoint' ||
+                (formData.Lien_Parente === 'Enfants' && selectedFamilyMember !== '')
+              }
             />
           </div>
 
@@ -557,9 +663,21 @@ export default function FormPage() {
               value={formData.Age_Malade}
               onChange={handleChange}
               min={0}
-              className={styles.inputField + ' ' + styles.ageInput}
-              readOnly={formData.Lien_Parente === 'Lui-meme' || formData.Lien_Parente === 'Conjoint' || (formData.Lien_Parente === 'Enfants' && selectedFamilyMember !== '')}
+              aria-invalid={isChildOverOrAt25 ? 'true' : 'false'}
+              className={[
+                styles.inputField,
+                styles.ageInput,
+                isChildOverOrAt25 ? styles.inputError : ''
+              ].join(' ').trim()}
+              readOnly={
+                formData.Lien_Parente === 'Lui-meme' ||
+                formData.Lien_Parente === 'Conjoint' ||
+                (formData.Lien_Parente === 'Enfants' && selectedFamilyMember !== '')
+              }
             />
+            {isChildOverOrAt25 && (
+              <div className={styles.inlineWarning}>Âge ≥ {AGE_LIMIT} — vérifier l’éligibilité.</div>
+            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -583,10 +701,11 @@ export default function FormPage() {
 
         <button
           type="submit"
-          disabled={blockSubmit}
+          disabled={blockSubmit || submitting}
           className={styles.submitButton}
+          title={submitting ? 'Envoi en cours...' : 'Envoyer'}
         >
-          Envoyer
+          {submitting ? 'Envoi...' : 'Envoyer'}
         </button>
       </form>
 

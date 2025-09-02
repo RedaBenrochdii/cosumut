@@ -1,17 +1,17 @@
 import React from 'react';
-import styles from '../styles/BordereauPage.module.css'; // S'assurer que le bon fichier de style est importé
+import styles from '../styles/BordereauPage.module.css'; // réutilise les styles (table, buttons, etc.)
 
 export function DataTable({ data, onDelete, onDeleteAll, onEdit }) {
-  // Calcul des totaux
-  const totalMontant = data
-    .reduce((sum, item) => sum + parseFloat(item.Montant || 0), 0)
-    .toFixed(2);
-  const totalRembourse = data
-    .reduce((sum, item) => sum + parseFloat(item.Montant_Rembourse || 0), 0)
-    .toFixed(2);
+  const toNumber = (v) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const totalMontant = data.reduce((sum, item) => sum + toNumber(item.Montant ?? item.Total_Frais_Engages), 0).toFixed(2);
+  const totalRembourse = data.reduce((sum, item) => sum + toNumber(item.Montant_Rembourse), 0).toFixed(2);
 
   return (
-    <div className={styles.tableContainer}> {/* Utilise le conteneur pour le défilement horizontal */}
+    <div className={styles.tableContainer}>
       <table className={styles.table}>
         <thead>
           <tr>
@@ -22,6 +22,7 @@ export function DataTable({ data, onDelete, onDeleteAll, onEdit }) {
             <th>Nom Malade</th>
             <th>Prénom Malade</th>
             <th>Type</th>
+            <th>Nature Maladie</th>
             <th>Montant</th>
             <th>Remboursé</th>
             <th>Code Assurance</th>
@@ -30,39 +31,47 @@ export function DataTable({ data, onDelete, onDeleteAll, onEdit }) {
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
+          {data.length === 0 && (
+            <tr>
+              <td colSpan={14} style={{ textAlign: 'center', color: '#666' }}>
+                Aucun dossier à afficher.
+              </td>
+            </tr>
+          )}
+
           {data.map((item, idx) => (
             <tr key={idx}>
-              <td>{item.DateConsultation}</td>
-              <td>{item.Matricule_Employe}</td>
-              <td>{item.Nom_Employe}</td>
-              <td>{item.Prenom_Employe}</td>
-              <td>{item.Nom_Malade}</td>
+              <td>{item.DateConsultation || '—'}</td>
+              <td>{item.Matricule_Employe || item.Matricule_Ste || '—'}</td>
+              <td>{item.Nom_Employe || '—'}</td>
+              <td>{item.Prenom_Employe || '—'}</td>
+              <td>{item.Nom_Malade || '—'}</td>
+              <td>{item.Prenom_Malade || '—'}</td>
+              <td>{item.Type_Malade || '—'}</td>
+              <td>{item.Nature_Maladie || '—'}</td>
+              <td>{item.Montant ?? item.Total_Frais_Engages ?? '0.00'}</td>
+              <td>{item.Montant_Rembourse ?? '0.00'}</td>
+              <td>{item.Code_Assurance || '—'}</td>
+              <td>{item.Numero_Declaration || '—'}</td>
+              <td>{item.Ayant_Droit || item.Lien_Parente || '—'}</td>
               <td>
-                {item.Prenom_Malade 
-                  ? item.Prenom_Malade 
-                  : <em style={{ color: 'gray' }}>—</em>}
-              </td>
-              <td>{item.Type_Malade}</td>
-              <td>{item.Montant}</td>
-              <td>{item.Montant_Rembourse}</td>
-              <td>{item.Code_Assurance}</td>
-              <td>{item.Numero_Declaration}</td>
-              <td>{item.Ayant_Droit}</td>
-              <td>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: 8 }}>
                   <button
-                    onClick={() => onEdit(item, idx)}
+                    onClick={() => onEdit?.(item, idx)}
                     className={`${styles.button} ${styles.primaryButton}`}
-                    style={{ backgroundColor: 'var(--warning-color)' }} /* Bouton Modifier en jaune */
+                    style={{ backgroundColor: 'var(--warning-color, #f59e0b)' }}
+                    type="button"
                   >
-                     Modifier
+                    Modifier
                   </button>
                   <button
-                    onClick={() => onDelete(idx)}
+                    onClick={() => onDelete?.(idx)}
                     className={`${styles.button} ${styles.dangerButton}`}
+                    type="button"
                   >
-                     Supprimer
+                    Supprimer
                   </button>
                 </div>
               </td>
@@ -73,11 +82,9 @@ export function DataTable({ data, onDelete, onDeleteAll, onEdit }) {
         {data.length > 0 && (
           <tfoot>
             <tr>
-              <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                Totaux :
-              </td>
-              <td style={{ fontWeight: 'bold' }}>{totalMontant}</td>
-              <td style={{ fontWeight: 'bold' }}>{totalRembourse}</td>
+              <td colSpan={8} style={{ textAlign: 'right', fontWeight: 600 }}>Totaux :</td>
+              <td style={{ fontWeight: 700 }}>{totalMontant}</td>
+              <td style={{ fontWeight: 700 }}>{totalRembourse}</td>
               <td colSpan={4}></td>
             </tr>
           </tfoot>
@@ -85,10 +92,11 @@ export function DataTable({ data, onDelete, onDeleteAll, onEdit }) {
       </table>
 
       {data.length > 0 && (
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
           <button
             onClick={onDeleteAll}
             className={`${styles.button} ${styles.dangerButton}`}
+            type="button"
           >
             Supprimer Tout
           </button>

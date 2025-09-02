@@ -1,22 +1,17 @@
-# === Étape 1: Build ===
-# Crée l'application React
-FROM node:18-alpine AS build
+# syntax=docker/dockerfile:1
+
+# --- Build (Vite) ---
+FROM node:20-alpine AS build
 WORKDIR /app
-# Copier les fichiers de dépendances du frontend (package.json à la racine)
 COPY package*.json ./
-# Installer toutes les dépendances
-RUN npm install
-# Copier tout le code source du frontend
+RUN npm ci
 COPY . .
-# Construire l'application pour la production
+ARG VITE_API_BASE_URL=/api
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
-# === Étape 2: Serve ===
-# Sert les fichiers statiques avec Nginx
-FROM nginx:alpine
-# Copier les fichiers statiques construits de l'étape précédente
-COPY --from=build /app/dist /usr/share/nginx/html
-# Copier la configuration Nginx pour gérer le routage des SPA (Single Page Application)
+
+# --- Runtime (Nginx) ---
+FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-# Exposer le port 80 (port par défaut de Nginx)
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
-# La commande par défaut de Nginx s'exécutera

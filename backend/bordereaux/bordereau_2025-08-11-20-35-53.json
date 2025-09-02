@@ -1,0 +1,22 @@
+{
+  "dossiers": [
+    {
+      "N° Police": "60/363400",
+      "N° Adhésion": "2514875",
+      "Matricule": "002001S",
+      "Nom/Prénom": "HALABI MOHEMED",
+      "Numéro dossier": "",
+      "Lien parenté": "Conjoint",
+      "Montant": "77775.00"
+    },
+    {
+      "N° Police": "60/875800",
+      "N° Adhésion": "7777DDDDDDD",
+      "Matricule": "7777",
+      "Nom/Prénom": "Benrochdi Reda",
+      "Numéro dossier": "A",
+      "Lien parenté": "Enfants",
+      "Montant": "23.00"
+    }
+  ]
+}

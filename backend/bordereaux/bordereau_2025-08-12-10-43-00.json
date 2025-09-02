@@ -1,0 +1,40 @@
+{
+  "dossiers": [
+    {
+      "N° Police": "",
+      "N° Adhésion": "",
+      "Matricule": "",
+      "Nom/Prénom": "",
+      "Numéro dossier": "",
+      "Lien parenté": "",
+      "Montant": "0.00"
+    },
+    {
+      "N° Police": "",
+      "N° Adhésion": "",
+      "Matricule": "",
+      "Nom/Prénom": "",
+      "Numéro dossier": "",
+      "Lien parenté": "",
+      "Montant": "0.00"
+    },
+    {
+      "N° Police": "60/875800",
+      "N° Adhésion": "7777",
+      "Matricule": "7777",
+      "Nom/Prénom": "Benrochdi Reda",
+      "Numéro dossier": "",
+      "Lien parenté": "Lui-meme",
+      "Montant": "120000.00"
+    },
+    {
+      "N° Police": "60/363400",
+      "N° Adhésion": "2514875",
+      "Matricule": "002001S",
+      "Nom/Prénom": "HALABI MOHEMED",
+      "Numéro dossier": "6534",
+      "Lien parenté": "Conjoint",
+      "Montant": "8354.00"
+    }
+  ]
+}

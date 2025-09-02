@@ -198,7 +198,7 @@ export default function ProductionDashboard() {
       <fieldset className={styles.card}>
         <legend>Importer Employés (Excel)</legend>
         <div className={styles.formGroup}>
-          <label htmlFor="excelUpload">Uploader un fichier Excel (.xlsx) :</label>
+          <label htmlFor="excelUpload">Uploader un fichier Excel :</label>
           <input
             type="file"
             id="excelUpload"
