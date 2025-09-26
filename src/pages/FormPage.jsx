@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import styles from '../styles/FormPage.module.css';
-import OCRAnonymizer from "../components/OCRAnonymizer";
 
 // ⚠️ NE PAS utiliser process.env avec Vite
 const API_BASE =
@@ -11,7 +10,7 @@ const API_BASE =
 
 const api = axios.create({ baseURL: API_BASE });
 
-const AGE_LIMIT = 25; // ✅ Seuil d’alerte visuelle pour les ENFANTS
+const AGE_LIMIT = 25; // ✅ Seuil d'alerte visuelle pour les ENFANTS
 
 // État initial des champs du formulaire
 const INITIAL_FORM_STATE = {
@@ -26,7 +25,8 @@ const INITIAL_FORM_STATE = {
   Nom_Prenom_Malade: '',
   Age_Malade: '',
   Lien_Parente: '', // 'Lui-meme', 'Conjoint', 'Enfants'
-  Nature_Maladie: ''
+  Nature_Maladie: '',
+  file_path: ''
 };
 
 export default function FormPage() {
@@ -39,8 +39,7 @@ export default function FormPage() {
   const [showAlertDialog, setShowAlertDialog] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedFamilyMember, setSelectedFamilyMember] = useState('');
-  const [submitting, setSubmitting] = useState(false); // 👈 anti double-clic
-  const [ocrEngine, setOcrEngine] = useState('gemini'); // 'gemini', 'paddle', 'tesseract'
+  const [submitting, setSubmitting] = useState(false);
 
   /* =========================
      UI: Dark Mode
@@ -118,6 +117,7 @@ export default function FormPage() {
     }));
   }, [calculateAge]);
 
+  // 🔥 AUTO-COMPLETION BIDIRECTIONNELLE : MATRICULE ↔ NOM/PRÉNOM
   const autoFillFromEmploye = useCallback((field, value) => {
     if (!value) {
       setFormData(prev => ({
@@ -138,13 +138,41 @@ export default function FormPage() {
     }
 
     let emp = null;
+    
     if (field === 'Matricule_Ste') {
-      emp = employesData.find(e => e.Matricule_Employe?.toLowerCase() === value.toLowerCase());
-    } else if (field === 'Nom_Prenom_Assure') {
-      emp = employesData.find(e => {
-        const fullName = `${e.Nom_Employe || ''} ${e.Prenom_Employe || ''}`.trim();
-        return fullName.toLowerCase() === value.toLowerCase();
-      });
+      if (value.length >= 4) {
+        emp = employesData.find(e => 
+          e.Matricule_Employe?.toLowerCase().startsWith(value.toLowerCase())
+        );
+        
+        if (emp && value.length >= 4 && value !== emp.Matricule_Employe) {
+          setFormData(prev => ({ ...prev, Matricule_Ste: emp.Matricule_Employe }));
+        }
+      } else {
+        emp = employesData.find(e => e.Matricule_Employe?.toLowerCase() === value.toLowerCase());
+      }
+    } 
+    else if (field === 'Nom_Prenom_Assure') {
+      const searchValue = value.toLowerCase().trim();
+      
+      if (searchValue.length >= 3) {
+        emp = employesData.find(e => {
+          const fullName = `${e.Nom_Employe || ''} ${e.Prenom_Employe || ''}`.toLowerCase().trim();
+          const reversedName = `${e.Prenom_Employe || ''} ${e.Nom_Employe || ''}`.toLowerCase().trim();
+          
+          return fullName === searchValue || 
+                 reversedName === searchValue ||
+                 fullName.includes(searchValue) ||
+                 reversedName.includes(searchValue);
+        });
+        
+        if (emp) {
+          const fullName = `${emp.Nom_Employe || ''} ${emp.Prenom_Employe || ''}`.trim();
+          if (value !== fullName) {
+            setFormData(prev => ({ ...prev, Nom_Prenom_Assure: fullName }));
+          }
+        }
+      }
     }
 
     setSelectedEmployee(emp);
@@ -152,8 +180,8 @@ export default function FormPage() {
     if (emp) {
       setFormData(prev => ({
         ...prev,
-        Numero_Contrat: emp.Numero_Contrat || prev.Numero_Contrat || '',
-        Numero_Affiliation: emp.Numero_Affiliation || prev.Numero_Affiliation || '',
+        Numero_Contrat: emp.Numero_Contrat || '',
+        Numero_Affiliation: emp.Numero_Affiliation || '',
         Matricule_Ste: emp.Matricule_Employe || '',
         Nom_Prenom_Assure: `${emp.Nom_Employe || ''} ${emp.Prenom_Employe || ''}`.trim(),
       }));
@@ -171,13 +199,25 @@ export default function FormPage() {
         setShowAlertDialog(false);
       }
     } else {
-      setFormData(prev => ({
-        ...prev,
-        Numero_Contrat: '',
-        Numero_Affiliation: '',
-        Nom_Prenom_Malade: '',
-        Age_Malade: '',
-      }));
+      if (field === 'Matricule_Ste') {
+        setFormData(prev => ({
+          ...prev,
+          Numero_Contrat: '',
+          Numero_Affiliation: '',
+          Nom_Prenom_Assure: '',
+          Nom_Prenom_Malade: '',
+          Age_Malade: '',
+        }));
+      } else if (field === 'Nom_Prenom_Assure') {
+        setFormData(prev => ({
+          ...prev,
+          Matricule_Ste: '',
+          Numero_Contrat: '',
+          Numero_Affiliation: '',
+          Nom_Prenom_Malade: '',
+          Age_Malade: '',
+        }));
+      }
       setAlertMessage('');
       setBlockSubmit(false);
       setShowAlertDialog(false);
@@ -193,7 +233,6 @@ export default function FormPage() {
     const evaluateExpression = (expression) => {
       try {
         const sanitizedExpression = expression.replace(/[^0-9+\-*/.]/g, '');
-        // eslint-disable-next-line no-new-func
         const result = new Function('return ' + sanitizedExpression)();
         return Number.isFinite(result) ? result.toString() : value;
       } catch {
@@ -258,8 +297,22 @@ export default function FormPage() {
     }
   };
 
+  const isAllVerified = () => {
+    const requiredFields = Object.keys(INITIAL_FORM_STATE).filter(field => field !== 'file_path');
+    return requiredFields.every(field => {
+      if (field === 'selectedChild' && formData.Lien_Parente !== 'Enfants') return true;
+      return formData[field] !== '';
+    }) && (formData.Lien_Parente !== 'Enfants' || selectedFamilyMember !== '');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!isAllVerified()) {
+      setAlertMessage('Veuillez remplir tous les champs obligatoires.');
+      setShowAlertDialog(true);
+      return;
+    }
 
     if (blockSubmit) {
       setAlertMessage(alertMessage || '❌ Formulaire bloqué');
@@ -271,7 +324,7 @@ export default function FormPage() {
   };
 
   /* =========================
-     Soumission → API / DB + localStorage
+     ✅ FONCTION CONFIRMSUBMISSION CORRIGÉE
   ========================== */
   const confirmSubmission = async () => {
     setShowConfirmModal(false);
@@ -317,115 +370,72 @@ export default function FormPage() {
       prenomMalade = parts.slice(1).join(' ') || '';
     }
 
-    // Payload envoyé au backend (inclut Nature_Maladie)
+    // ✅ PAYLOAD CORRIGÉ
     const dossierToSave = {
-      DateConsultation: formData.Date_Consultation || null,
-      Numero_Contrat: formData.Numero_Contrat || null,
-      Numero_Affiliation: formData.Numero_Affiliation || null,
-      Matricule_Employe: formData.Matricule_Ste || null,
-      Nom_Employe: nomEmploye || null,
-      Prenom_Employe: prenomEmploye || null,
-      Nom_Malade: nomMalade || null,
-      Prenom_Malade: prenomMalade || null,
-      Type_Malade: formData.Type_Declaration || null,
-      Nature_Maladie: (formData.Nature_Maladie || '').trim(),
+      DateConsultation: formData.Date_Consultation || '',
+      Numero_Contrat: formData.Numero_Contrat || '',
+      Numero_Affiliation: formData.Numero_Affiliation || '',
+      Matricule_Employe: formData.Matricule_Ste || '',
+      Nom_Employe: nomEmploye || '',
+      Prenom_Employe: prenomEmploye || '',
+      Nom_Malade: nomMalade || '',
+      Prenom_Malade: prenomMalade || '',
+      Type_Malade: formData.Type_Declaration || '',
+      Nature_Maladie: (formData.Nature_Maladie || '').trim() || '',
       Montant: Number.parseFloat(formData.Total_Frais_Engages || 0) || 0,
       Montant_Rembourse: 0,
       Code_Assurance: '',
-      Numero_Declaration: formData.Numero_Declaration || null,
-      Ayant_Droit: formData.Lien_Parente || null,
+      Numero_Declaration: formData.Numero_Declaration || '',
+      Ayant_Droit: formData.Lien_Parente || '',
+      file_path: formData.file_path || ''
     };
 
+    console.log('🚀 Données envoyées:', JSON.stringify(dossierToSave, null, 2));
+
     try {
-      // 🔗 1) Enregistrement DB
-      const res = await api.post('/api/dossiers', dossierToSave);
+      // ⏱️ TIMEOUT AJOUTÉ
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout - Serveur ne répond pas')), 10000)
+      );
+
+      const requestPromise = api.post('/api/dossiers', dossierToSave, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const res = await Promise.race([requestPromise, timeoutPromise]);
+      
+      console.log('✅ Réponse reçue:', res.data);
+      
       if (!res.data?.success) throw new Error('Réponse inattendue');
 
-      // 💾 2) Ajout au bordereau local (utilisé par BordereauPage)
+      // 💾 Ajout au bordereau local
       const updatedFormList = [...currentFormList, dossierToSave];
       localStorage.setItem('formList', JSON.stringify(updatedFormList));
 
-      // 🔔 3) Notifier les autres vues (BordereauPage peut écouter cet event)
+      // 🔔 Notifier les autres vues
       window.dispatchEvent(new CustomEvent('formList:updated', { detail: { count: updatedFormList.length } }));
 
       setAlertMessage('✅ Dossier enregistré et ajouté au bordereau.');
       setShowAlertDialog(true);
 
-      // reset du formulaire
+      // Reset du formulaire
       setFormData(INITIAL_FORM_STATE);
       setBlockSubmit(false);
       setSelectedEmployee(null);
       setSelectedFamilyMember('');
     } catch (e) {
-      console.error(e);
-      setAlertMessage("❌ Échec d'enregistrement en base. Vérifie que le serveur tourne et que STORAGE_DRIVER=sqlite (ou MSSQL).");
+      console.error('❌ Erreur:', e);
+      
+      if (e.message.includes('Timeout')) {
+        setAlertMessage('❌ Serveur ne répond pas. Vérifie que le backend fonctionne.');
+      } else {
+        setAlertMessage(`❌ Erreur: ${e.response?.data?.error || e.message}`);
+      }
+      
       setShowAlertDialog(true);
     } finally {
+      console.log('🏁 Finally - Reset submitting');
       setSubmitting(false);
-    }
-  };
-
-  /* =========================
-     Helpers OCR (Gemini)
-  ========================== */
-  const toInputDate = (s='') => {
-    const m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
-    if (!m) return s;
-    const jj = m[1].padStart(2,'0');
-    const mm = m[2].padStart(2,'0');
-    const aaaa = m[3];
-    return `${aaaa}-${mm}-${jj}`;
-  };
-  const normalizeLien = (s='') => {
-    const t = s.toLowerCase();
-    if (t.includes('lui')) return 'Lui-meme';
-    if (t.includes('conjoint')) return 'Conjoint';
-    if (t.includes('enfant')) return 'Enfants';
-    return '';
-  };
-  const extractNumeroDeclaration = (obj = {}) => {
-    const cands = [
-      obj.Numero_Declaration,
-      obj["Numéro dossier"],
-      obj.numero_dossier,
-      obj.numeroDossier,
-      obj.DeclarationHeader,
-      obj.Top_Declaration,
-      obj.declaration_header,
-      obj.declaration_en_tete,
-    ];
-    for (const v of cands) {
-      if (!v) continue;
-      const m = String(v).match(/\d{6,}/); // 6+ chiffres
-      if (m) return m[0];
-    }
-    const all = Object.values(obj).filter(v => typeof v === "string").join(" | ");
-    const m = all.match(/declar\w*\s+de\s+mala\w*\s*:\s*([0-9]{6,})/i);
-    return m ? m[1] : "";
-  };
-
-  // ⚡ Appelé automatiquement après anonymisation + OCR Gemini
-  const handleAutoFillOCR = (extracted) => {
-    const patch = { ...extracted };
-
-    if (patch.Date_Consultation) {
-      patch.Date_Consultation = toInputDate(patch.Date_Consultation);
-    }
-    if (patch.Lien_Parente) {
-      patch.Lien_Parente = normalizeLien(patch.Lien_Parente);
-    }
-    if (!patch.Numero_Declaration) {
-      patch.Numero_Declaration = extractNumeroDeclaration(extracted);
-    }
-
-    setFormData(prev => ({ ...prev, ...patch }));
-
-    const matricule = patch.Matricule_Ste?.trim();
-    const nomAssure = patch.Nom_Prenom_Assure?.trim();
-    if (matricule) {
-      autoFillFromEmploye('Matricule_Ste', matricule);
-    } else if (nomAssure) {
-      autoFillFromEmploye('Nom_Prenom_Assure', nomAssure);
     }
   };
 
@@ -453,28 +463,7 @@ export default function FormPage() {
       <h1 className={styles.formTitle}>Déclaration de Maladie</h1>
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        {/* 1) Scan + anonymisation + OCR (choix moteur) */}
-        <fieldset className={styles.formSection}>
-          <legend className={styles.sectionTitle}>Scan de Document (OCR)</legend>
-          <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-            <label htmlFor="ocrEngine">Moteur OCR :</label>
-            <select
-              id="ocrEngine"
-              name="ocrEngine"
-              value={ocrEngine}
-              onChange={e => setOcrEngine(e.target.value)}
-              className={styles.inputField}
-              style={{ maxWidth: 200 }}
-            >
-              <option value="gemini">Gemini (IA Google)</option>
-              <option value="paddle">PaddleOCR (local)</option>
-              <option value="tesseract">Tesseract.js (local)</option>
-            </select>
-          </div>
-          <OCRAnonymizer onAutoExtract={handleAutoFillOCR} ocrEngine={ocrEngine} />
-        </fieldset>
-
-        {/* 2) Numéro du Dossier */}
+        {/* Numéro du Dossier */}
         <fieldset className={styles.formSection}>
           <legend className={styles.sectionTitle}>Numéro du Dossier</legend>
           <div className={styles.formGroup}>
@@ -490,11 +479,10 @@ export default function FormPage() {
           </div>
         </fieldset>
 
-        {/* 3) Informations Assuré */}
+        {/* Informations Assuré */}
         <fieldset className={styles.formSection}>
           <legend className={styles.sectionTitle}>Informations Assuré</legend>
 
-          {/* Matricule en premier */}
           <div className={styles.formGroup}>
             <label htmlFor="Matricule_Ste">Matricule Ste :</label>
             <input
@@ -508,7 +496,6 @@ export default function FormPage() {
             />
           </div>
 
-          {/* N° du contrat + N° affiliation */}
           <div className={styles.formGroup + ' ' + styles.inputGroup}>
             <div className={styles.inputFieldHalf}>
               <label htmlFor="Numero_Contrat">N° du contrat :</label>
@@ -547,7 +534,7 @@ export default function FormPage() {
           </div>
         </fieldset>
 
-        {/* 4) Détails déclaration */}
+        {/* Détails déclaration */}
         <fieldset className={styles.formSection}>
           <legend className={styles.sectionTitle}>Détails de la Déclaration</legend>
           <div className={styles.formGroup}>
@@ -578,7 +565,6 @@ export default function FormPage() {
               value={formData.Total_Frais_Engages}
               onChange={handleChange}
               className={styles.inputField}
-              placeholder="ex: 120+80.5*2"
             />
           </div>
 
@@ -595,7 +581,7 @@ export default function FormPage() {
           </div>
         </fieldset>
 
-        {/* 5) Informations Malade */}
+        {/* Informations Malade */}
         <fieldset className={styles.formSection}>
           <legend className={styles.sectionTitle}>Informations Malade</legend>
           <div className={styles.formGroup}>
@@ -676,7 +662,7 @@ export default function FormPage() {
               }
             />
             {isChildOverOrAt25 && (
-              <div className={styles.inlineWarning}>Âge ≥ {AGE_LIMIT} — vérifier l’éligibilité.</div>
+              <div className={styles.inlineWarning}>Âge ≥ {AGE_LIMIT} — vérifier l'éligibilité.</div>
             )}
           </div>
 
@@ -701,7 +687,7 @@ export default function FormPage() {
 
         <button
           type="submit"
-          disabled={blockSubmit || submitting}
+          disabled={blockSubmit || submitting || !isAllVerified()}
           className={styles.submitButton}
           title={submitting ? 'Envoi en cours...' : 'Envoyer'}
         >

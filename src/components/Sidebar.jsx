@@ -24,11 +24,7 @@ const Sidebar = () => {
             Accueil
           </NavLink>
         </li>
-        <li>
-          <NavLink to="/settings" className={({ isActive }) => (isActive ? styles.active : undefined)}>
-            Documents reçus
-          </NavLink>
-        </li>
+      
         <li>
           <NavLink to="/form" className={({ isActive }) => (isActive ? styles.active : undefined)}>
             Formulaire

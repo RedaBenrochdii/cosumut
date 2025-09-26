@@ -3,7 +3,7 @@
     "Matricule_Employe": "002001S",
     "Nom_Employe": "HALABI",
     "Prenom_Employe": "MOHEMED",
-    "DateNaissance": "1960-12-31",
+    "DateNaissance": "+024692-12-31",
     "Numero_Contrat": "60/363400",
     "Numero_Affiliation": "2514875",
     "Nom_Prenom_Assure": "",
@@ -18,15 +18,15 @@
         "type": "enfant",
         "nom": "HALABI",
         "prenom": "AMINE",
-        "DateNaissance": "1998-08-23"
+        "DateNaissance": "2020-08-23"
       }
     ]
   },
   {
-    "Matricule_Employe": "8462",
+    "Matricule_Employe": "005241S",
     "Nom_Employe": "HIMNI",
     "Prenom_Employe": "REDA",
-    "DateNaissance": "1967-12-31",
+    "DateNaissance": "+024692-12-31",
     "Numero_Contrat": "60/363400",
     "Numero_Affiliation": "2514875",
     "Nom_Prenom_Assure": "",
@@ -41,7 +41,7 @@
         "type": "enfant",
         "nom": "HIMNI",
         "prenom": "ADAM",
-        "DateNaissance": "2000-02-10"
+        "DateNaissance": "2012-02-10"
       }
     ]
   },
@@ -72,7 +72,7 @@
     "Matricule_Employe": "001234S",
     "Nom_Employe": "DANDOUN",
     "Prenom_Employe": "MUSTAPHA",
-    "DateNaissance": "1980-12-31",
+    "DateNaissance": "+024307-12-31",
     "Numero_Contrat": "60/349600",
     "Numero_Affiliation": "2589637",
     "Nom_Prenom_Assure": "",
@@ -87,7 +87,7 @@
         "type": "enfant",
         "nom": "DANDOUN",
         "prenom": "OUALID",
-        "DateNaissance": "2000-05-13"
+        "DateNaissance": "2005-05-13"
       }
     ]
   },
@@ -99,13 +99,6 @@
     "Numero_Contrat": "60/349600",
     "Numero_Affiliation": "2598745",
     "Nom_Prenom_Assure": "",
-    "Famille": []
-  },
-  {
-    "Matricule_Employe": "84625",
-    "Nom_Employe": "Benrouchdi",
-    "Prenom_Employe": "reda",
-    "DateNaissance": "2011-07-14",
     "Famille": []
   }
 ]

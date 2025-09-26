@@ -2,9 +2,6 @@
 try { require('dotenv').config(); }
 catch { console.warn("ℹ️ dotenv non installé, on continue (ENV via Docker)."); }
 
-// OCR optionnel
-const HAS_GEMINI = !!process.env.GEMINI_API_KEY;
-if (!HAS_GEMINI) console.warn("⚠️ Aucune GEMINI_API_KEY: la route OCR sera désactivée.");
 
 // 🌐 Dépendances
 const express = require('express');
@@ -17,7 +14,6 @@ const ExcelJS = require('exceljs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-.env';
-const { GoogleGenerativeAI } = HAS_GEMINI ? require('@google/generative-ai') : { GoogleGenerativeAI: null };
 
 // (fallbacks si modules absents chez toi)
 let dataStorage = null;
@@ -25,12 +21,10 @@ try { dataStorage = require('./services/storage'); } catch (_) { dataStorage = {
 let uploadRoute = null;
 try { uploadRoute = require('./routes/uploadRoute'); } catch (_) { uploadRoute = express.Router(); }
 
-// ✅ OCR init
-const genAI = HAS_GEMINI ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 
 // ✅ Server
 const app = express();
-const PORT = process.env.PORT || 4001;
+const PORT = process.env.PORT || 4000;
 
 // ✅ Middleware
 app.use(cors());
@@ -121,6 +115,7 @@ if (useSqlite) {
       Code_Assurance      TEXT,
       Numero_Declaration  TEXT,
       Ayant_Droit         TEXT,
+      Status              TEXT NOT NULL DEFAULT 'En cours',
       CreatedAt           TEXT DEFAULT (datetime('now'))
     );
 
@@ -275,6 +270,8 @@ CREATE TABLE dbo.Dossiers (
   Code_Assurance NVARCHAR(50) NULL,
   Numero_Declaration NVARCHAR(100) NULL,
   Ayant_Droit NVARCHAR(50) NULL,
+  File_Path NVARCHAR(500) NULL,
+   Status NVARCHAR(50) NOT NULL DEFAULT 'En cours',
   CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
 
@@ -476,6 +473,333 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('/api/me', authMiddleware, (req, res) => { res.json({ user: req.user }); });
+// Ajoutez cette route APRÈS la route app.get('/api/me', ...)
+app.get('/api/debug/seed-users', async (req, res) => {
+  try {
+    if (!useMssql) {
+      return res.json({ error: 'Non connecté à MSSQL' });
+    }
+
+    const pool = await getMssqlPool();
+    
+    // Vérifier le nombre d'utilisateurs
+    const count = (await pool.request().query('SELECT COUNT(*) AS c FROM dbo.Users')).recordset[0].c;
+    console.log(`👤 Nombre d'utilisateurs MSSQL: ${count}`);
+
+    // Lister les utilisateurs existants
+    const users = (await pool.request().query('SELECT Id, username, role, CreatedAt FROM dbo.Users ORDER BY Id DESC')).recordset;
+    res.json({ success: true, message: `${count} utilisateurs trouvés`, users, driver: 'mssql' });
+
+  } catch (error) {
+    console.error('❌ Erreur seed users:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🆕 NOUVELLES ROUTES À AJOUTER ICI :
+/* =========================================================
+   👥 Gestion Utilisateurs (Admin uniquement)
+========================================================= */
+
+// Route pour lister les utilisateurs (admin uniquement)
+app.get('/api/users', authMiddleware, async (req, res) => {
+  try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Accès refusé - Admin requis' });
+    }
+    
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      const result = await pool.request().query('SELECT Id, username, role, CreatedAt FROM dbo.Users ORDER BY Id DESC');
+      return res.json(result.recordset);
+    }
+    
+    if (useSqlite) {
+      const users = db.prepare('SELECT Id, username, role, CreatedAt FROM Users ORDER BY Id DESC').all();
+      return res.json(users);
+    }
+
+    // JSON fallback
+    const users = fs.existsSync(USERS_FILE) ? fs.readJsonSync(USERS_FILE) : [];
+    res.json(users.map((u, i) => ({ Id: i+1, username: u.username, role: u.role, CreatedAt: new Date().toISOString() })));
+  } catch (error) {
+    console.error('❌ /api/users:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Route pour supprimer un utilisateur (admin uniquement)
+app.delete('/api/users/:id', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Accès refusé - Admin requis' });
+    }
+    
+    const { id } = req.params;
+    
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      await pool.request()
+        .input('id', sqlsrv.Int, id)
+        .query('DELETE FROM dbo.Users WHERE Id = @id');
+    }
+    
+    if (useSqlite) {
+      db.prepare('DELETE FROM Users WHERE Id = ?').run(id);
+    }
+
+    // JSON fallback
+    if (fs.existsSync(USERS_FILE)) {
+      const users = fs.readJsonSync(USERS_FILE);
+      const filtered = users.filter((_, i) => i !== parseInt(id) - 1);
+      fs.writeJsonSync(USERS_FILE, filtered, { spaces: 2 });
+    }
+    
+    res.json({ success: true, message: 'Utilisateur supprimé' });
+  } catch (error) {
+    console.error('❌ DELETE /api/users/:id:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Route pour modifier le rôle d'un utilisateur (admin uniquement)
+app.patch('/api/users/:id/role', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Accès refusé - Admin requis' });
+    }
+    
+    const { id } = req.params;
+    const { role } = req.body;
+    
+    if (!role || !['admin', 'agent'].includes(role)) {
+      return res.status(400).json({ error: 'Rôle invalide' });
+    }
+    
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      await pool.request()
+        .input('id', sqlsrv.Int, id)
+        .input('role', sqlsrv.NVarChar(50), role)
+        .query('UPDATE dbo.Users SET role = @role WHERE Id = @id');
+    }
+    
+    if (useSqlite) {
+      db.prepare('UPDATE Users SET role = ? WHERE Id = ?').run(role, id);
+    }
+    
+    res.json({ success: true, message: `Rôle mis à jour vers ${role}` });
+  } catch (error) {
+    console.error('❌ PATCH /api/users/:id/role:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+// ✅ Route pour changer le mot de passe (utilisateur connecté)
+app.post('/api/change-password', authMiddleware, async (req, res) => {
+  try {
+    const { username, currentPassword, newPassword } = req.body;
+
+    // Validation des données
+    if (!username || !newPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Nom d\'utilisateur et nouveau mot de passe requis' 
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Le mot de passe doit contenir au moins 6 caractères' 
+      });
+    }
+
+    if (useSqlite) {
+      // Trouver l'utilisateur
+      const user = db.prepare('SELECT * FROM Users WHERE username = ?').get(username);
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Utilisateur non trouvé' 
+        });
+      }
+
+      // Vérifier ancien mot de passe si fourni
+      if (currentPassword) {
+        const validPassword = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!validPassword) {
+          return res.status(401).json({ 
+            success: false, 
+            error: 'Ancien mot de passe incorrect' 
+          });
+        }
+      }
+
+      // Hasher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Mettre à jour le mot de passe
+      db.prepare('UPDATE Users SET password_hash = ? WHERE username = ?')
+        .run(hashedPassword, username);
+
+      return res.json({ 
+        success: true, 
+        message: `Mot de passe de ${username} mis à jour avec succès` 
+      });
+    }
+
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      
+      // Trouver l'utilisateur
+      const userResult = await pool.request()
+        .input('username', sqlsrv.NVarChar(100), username)
+        .query('SELECT * FROM dbo.Users WHERE username = @username');
+      
+      if (!userResult.recordset.length) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Utilisateur non trouvé' 
+        });
+      }
+
+      const user = userResult.recordset[0];
+
+      // Vérifier ancien mot de passe si fourni
+      if (currentPassword) {
+        const validPassword = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!validPassword) {
+          return res.status(401).json({ 
+            success: false, 
+            error: 'Ancien mot de passe incorrect' 
+          });
+        }
+      }
+
+      // Hasher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Mettre à jour le mot de passe
+      await pool.request()
+        .input('username', sqlsrv.NVarChar(100), username)
+        .input('password_hash', sqlsrv.NVarChar(500), hashedPassword)
+        .query('UPDATE dbo.Users SET password_hash = @password_hash WHERE username = @username');
+
+      return res.json({ 
+        success: true, 
+        message: `Mot de passe de ${username} mis à jour avec succès` 
+      });
+    }
+
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Driver de base de données non supporté' 
+    });
+
+  } catch (error) {
+    console.error('Erreur changement mot de passe:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erreur serveur' 
+    });
+  }
+});
+
+// ✅ Route pour reset mot de passe (Admin uniquement)
+app.post('/api/reset-password', authMiddleware, async (req, res) => {
+  try {
+    // Vérifier que l'utilisateur connecté est admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Accès refusé - droits admin requis' 
+      });
+    }
+
+    const { adminUsername, targetUsername, newPassword } = req.body;
+
+    // Validation
+    if (!targetUsername || !newPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Nom d\'utilisateur cible et nouveau mot de passe requis' 
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Le mot de passe doit contenir au moins 6 caractères' 
+      });
+    }
+
+    if (useSqlite) {
+      // Vérifier que l'utilisateur cible existe
+      const targetUser = db.prepare('SELECT * FROM Users WHERE username = ?').get(targetUsername);
+      if (!targetUser) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Utilisateur cible non trouvé' 
+        });
+      }
+
+      // Hasher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Mettre à jour le mot de passe
+      db.prepare('UPDATE Users SET password_hash = ? WHERE username = ?')
+        .run(hashedPassword, targetUsername);
+
+      return res.json({ 
+        success: true, 
+        message: `Mot de passe de ${targetUsername} réinitialisé avec succès` 
+      });
+    }
+
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      
+      // Vérifier que l'utilisateur cible existe
+      const targetResult = await pool.request()
+        .input('targetUsername', sqlsrv.NVarChar(100), targetUsername)
+        .query('SELECT * FROM dbo.Users WHERE username = @targetUsername');
+      
+      if (!targetResult.recordset.length) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Utilisateur cible non trouvé' 
+        });
+      }
+
+      // Hasher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Mettre à jour le mot de passe
+      await pool.request()
+        .input('targetUsername', sqlsrv.NVarChar(100), targetUsername)
+        .input('password_hash', sqlsrv.NVarChar(500), hashedPassword)
+        .query('UPDATE dbo.Users SET password_hash = @password_hash WHERE username = @targetUsername');
+
+      return res.json({ 
+        success: true, 
+        message: `Mot de passe de ${targetUsername} réinitialisé par ${req.user.username}` 
+      });
+    }
+
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Driver de base de données non supporté' 
+    });
+
+  } catch (error) {
+    console.error('Erreur reset mot de passe:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erreur serveur' 
+    });
+  }
+});
 
 /* =========================================================
    👥 Employés
@@ -485,21 +809,62 @@ app.get('/api/employes', async (_req, res) => {
     if (useMssql) {
       const pool = await getMssqlPool();
       const [emps, fams] = await Promise.all([
-        pool.request().query('SELECT * FROM dbo.Employes ORDER BY Matricule_Employe'),
-        pool.request().query('SELECT * FROM dbo.Familles ORDER BY Matricule_Employe, type, nom, prenom')
+        // CORRIGÉ : Formatage des dates avec CONVERT
+        pool.request().query(`
+          SELECT 
+            Matricule_Employe,
+            Nom_Employe, 
+            Prenom_Employe,
+            CASE 
+              WHEN DateNaissance IS NULL THEN NULL
+              ELSE CONVERT(varchar(10), DateNaissance, 23)
+            END AS DateNaissance,
+            Numero_Contrat,
+            Numero_Affiliation
+          FROM dbo.Employes 
+          ORDER BY Matricule_Employe
+        `),
+        pool.request().query(`
+          SELECT 
+            Matricule_Employe,
+            type,
+            nom,
+            prenom,
+            CASE 
+              WHEN DateNaissance IS NULL THEN NULL
+              ELSE CONVERT(varchar(10), DateNaissance, 23)
+            END AS DateNaissance
+          FROM dbo.Familles 
+          ORDER BY Matricule_Employe, type, nom, prenom
+        `)
       ]);
+      
       const famByMat = new Map();
       for (const f of fams.recordset) {
         if (!famByMat.has(f.Matricule_Employe)) famByMat.set(f.Matricule_Employe, []);
         famByMat.get(f.Matricule_Employe).push(f);
       }
-      return res.json(emps.recordset.map(e => ({ ...e, Famille: famByMat.get(e.Matricule_Employe) || [] })));
+      
+      return res.json(emps.recordset.map(e => ({ 
+        ...e, 
+        Famille: famByMat.get(e.Matricule_Employe) || [] 
+      })));
     }
 
+    // Votre code SQLite et JSON reste inchangé
     if (useSqlite) {
       const rows = db.prepare(`SELECT * FROM Employes ORDER BY Matricule_Employe`).all();
       const famStmt = db.prepare(`SELECT * FROM Familles WHERE Matricule_Employe = ? ORDER BY type, nom, prenom`);
-      const list = rows.map(e => ({ ...e, Famille: famStmt.all(e.Matricule_Employe) }));
+      
+      const list = rows.map(e => ({ 
+        ...e, 
+        DateNaissance: e.DateNaissance ? e.DateNaissance.split('T')[0] : null,
+        Famille: famStmt.all(e.Matricule_Employe).map(f => ({
+          ...f,
+          DateNaissance: f.DateNaissance ? f.DateNaissance.split('T')[0] : null
+        }))
+      }));
+      
       return res.json(list);
     }
 
@@ -510,6 +875,7 @@ app.get('/api/employes', async (_req, res) => {
     res.status(500).json({ error: 'Erreur lecture employés' });
   }
 });
+
 
 app.post('/api/employes/add', async (req, res) => {
   try {
@@ -613,73 +979,153 @@ app.get('/api/employes/:matricule', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
-// ✅ Dossiers
+// ✅ Dossiers - VERSION CORRIGÉE
 app.post('/api/dossiers', async (req, res) => {
-  try {
-    const dossier = req.body;
-    if (!dossier || !dossier.Numero_Declaration) {
-      return res.status(400).json({ error: 'Numéro de déclaration manquant' });
-    }
+  try {
+    console.log('📝 Dossier reçu:', JSON.stringify(req.body, null, 2));
+    
+    const dossier = req.body;
 
-    if (useMssql) {
-      const pool = await getMssqlPool();
-      await pool.request()
-        .input('DateConsultation', sqlsrv.Date, dossier.DateConsultation || null)
-        .input('Numero_Contrat', sqlsrv.NVarChar(100), dossier.Numero_Contrat || null)
-        .input('Numero_Affiliation', sqlsrv.NVarChar(100), dossier.Numero_Affiliation || null)
-        .input('Matricule_Employe', sqlsrv.NVarChar(50), dossier.Matricule_Employe || null)
-        .input('Nom_Employe', sqlsrv.NVarChar(200), dossier.Nom_Employe || null)
-        .input('Prenom_Employe', sqlsrv.NVarChar(200), dossier.Prenom_Employe || null)
-        .input('Nom_Malade', sqlsrv.NVarChar(200), dossier.Nom_Malade || null)
-        .input('Prenom_Malade', sqlsrv.NVarChar(200), dossier.Prenom_Malade || null)
-        .input('Nature_Maladie', sqlsrv.NVarChar(500), dossier.Nature_Maladie || null)
-        .input('Type_Malade', sqlsrv.NVarChar(50), dossier.Type_Malade || null)
-        .input('Montant', sqlsrv.Decimal(18, 2), dossier.Montant)
-        .input('Montant_Rembourse', sqlsrv.Decimal(18, 2), dossier.Montant_Rembourse)
-        .input('Code_Assurance', sqlsrv.NVarChar(50), dossier.Code_Assurance || null)
-        .input('Numero_Declaration', sqlsrv.NVarChar(100), dossier.Numero_Declaration)
-        .input('Ayant_Droit', sqlsrv.NVarChar(50), dossier.Ayant_Droit || null)
-        .query(`
-          INSERT INTO dbo.Dossiers (
-            DateConsultation, Numero_Contrat, Numero_Affiliation, Matricule_Employe,
-            Nom_Employe, Prenom_Employe, Nom_Malade, Prenom_Malade, Nature_Maladie,
-            Type_Malade, Montant, Montant_Rembourse, Code_Assurance, Numero_Declaration, Ayant_Droit
-          ) VALUES (
-            @DateConsultation, @Numero_Contrat, @Numero_Affiliation, @Matricule_Employe,
-            @Nom_Employe, @Prenom_Employe, @Nom_Malade, @Prenom_Malade, @Nature_Maladie,
-            @Type_Malade, @Montant, @Montant_Rembourse, @Code_Assurance, @Numero_Declaration, @Ayant_Droit
-          );
-        `);
-    } else if (useSqlite) {
-      sql.insertDossier.run(
-        dossier.DateConsultation,
-        dossier.Numero_Contrat,
-        dossier.Numero_Affiliation,
-        dossier.Matricule_Employe,
-        dossier.Nom_Employe,
-        dossier.Prenom_Employe,
-        dossier.Nom_Malade,
-        dossier.Prenom_Malade,
-        dossier.Nature_Maladie,
-        dossier.Type_Malade,
-        dossier.Montant,
-        dossier.Montant_Rembourse,
-        dossier.Code_Assurance,
-        dossier.Numero_Declaration,
-        dossier.Ayant_Droit
-      );
-    } else {
-      // Legacy JSON (si utilisé)
-      const docs = fs.existsSync(DATA_FILE) ? await fs.readJson(DATA_FILE) : [];
-      docs.push(dossier);
-      await fs.writeJson(DATA_FILE, docs, { spaces: 2 });
-    }
-    res.json({ success: true, message: 'Dossier enregistré' });
-  } catch (err) {
-    console.error("❌ Erreur d'enregistrement du dossier:", err);
-    res.status(500).json({ error: 'Erreur lors de l\'enregistrement du dossier', details: err.message });
-  }
+    // 🔍 VALIDATIONS SIMPLES - UNE PAR CHAMP (comme tu voulais)
+    if (!dossier || !dossier.Numero_Declaration) {
+      return res.status(400).json({ error: 'Numéro de déclaration manquant' });
+    }
+
+    if (!dossier.Matricule_Employe) {
+      return res.status(400).json({ error: 'Matricule employé manquant' });
+    }
+
+    if (!dossier.Nom_Employe) {
+      return res.status(400).json({ error: 'Nom employé manquant' });
+    }
+
+    if (!dossier.Prenom_Employe) {
+      return res.status(400).json({ error: 'Prénom employé manquant' });
+    }
+
+    if (!dossier.Type_Malade) {
+      return res.status(400).json({ error: 'Type de déclaration manquant' });
+    }
+
+    if (!dossier.Montant || dossier.Montant <= 0) {
+      return res.status(400).json({ error: 'Montant invalide (doit être > 0)' });
+    }
+
+    if (!dossier.DateConsultation) {
+      return res.status(400).json({ error: 'Date de consultation manquante' });
+    }
+
+    if (!dossier.Ayant_Droit) {
+      return res.status(400).json({ error: 'Lien de parenté manquant' });
+    }
+
+    if (!dossier.Nom_Malade) {
+      return res.status(400).json({ error: 'Nom du malade manquant' });
+    }
+
+    if (!dossier.Prenom_Malade) {
+      return res.status(400).json({ error: 'Prénom du malade manquant' });
+    }
+
+    if (!dossier.Nature_Maladie || dossier.Nature_Maladie.trim() === '') {
+      return res.status(400).json({ error: 'Nature de la maladie manquante' });
+    }
+
+    console.log('✅ Toutes les validations OK, enregistrement...');
+
+    // 💾 ENREGISTREMENT EN BASE
+    if (useSqlite) {
+      const stmt = db.prepare(`
+        INSERT INTO Dossiers (
+          DateConsultation, Numero_Contrat, Numero_Affiliation,
+          Matricule_Employe, Nom_Employe, Prenom_Employe,
+          Nom_Malade, Prenom_Malade, Type_Malade, Nature_Maladie,
+          Montant, Montant_Rembourse, Code_Assurance,
+          Numero_Declaration, Ayant_Droit
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const result = stmt.run(
+        dossier.DateConsultation || null,
+        dossier.Numero_Contrat || null,
+        dossier.Numero_Affiliation || null,
+        dossier.Matricule_Employe,
+        dossier.Nom_Employe,
+        dossier.Prenom_Employe,
+        dossier.Nom_Malade,
+        dossier.Prenom_Malade,
+        dossier.Type_Malade,
+        dossier.Nature_Maladie,
+        dossier.Montant,
+        dossier.Montant_Rembourse || 0,
+        dossier.Code_Assurance || '',
+        dossier.Numero_Declaration,
+        dossier.Ayant_Droit
+        
+      );
+
+      console.log('✅ Dossier enregistré avec ID:', result.lastInsertRowid);
+      
+      return res.json({
+        success: true,
+        id: result.lastInsertRowid,
+        message: 'Dossier enregistré avec succès'
+      });
+    }
+
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      
+      await pool.request()
+        .input('DateConsultation', sqlsrv.Date, dossier.DateConsultation || null)
+        .input('Numero_Contrat', sqlsrv.NVarChar(100), dossier.Numero_Contrat || null)
+        .input('Numero_Affiliation', sqlsrv.NVarChar(100), dossier.Numero_Affiliation || null)
+        .input('Matricule_Employe', sqlsrv.NVarChar(50), dossier.Matricule_Employe)
+        .input('Nom_Employe', sqlsrv.NVarChar(200), dossier.Nom_Employe)
+        .input('Prenom_Employe', sqlsrv.NVarChar(200), dossier.Prenom_Employe)
+        .input('Nom_Malade', sqlsrv.NVarChar(200), dossier.Nom_Malade)
+        .input('Prenom_Malade', sqlsrv.NVarChar(200), dossier.Prenom_Malade)
+        .input('Type_Malade', sqlsrv.NVarChar(50), dossier.Type_Malade)
+        .input('Nature_Maladie', sqlsrv.NVarChar(500), dossier.Nature_Maladie)
+        .input('Montant', sqlsrv.Decimal(18, 2), dossier.Montant)
+        .input('Montant_Rembourse', sqlsrv.Decimal(18, 2), dossier.Montant_Rembourse || 0)
+        .input('Code_Assurance', sqlsrv.NVarChar(50), dossier.Code_Assurance || '')
+        .input('Numero_Declaration', sqlsrv.NVarChar(100), dossier.Numero_Declaration)
+        .input('Ayant_Droit', sqlsrv.NVarChar(50), dossier.Ayant_Droit)
+        .input('file_path', sqlsrv.NVarChar(255), dossier.file_path || null)
+        .query(`
+          INSERT INTO dbo.Dossiers (
+            DateConsultation, Numero_Contrat, Numero_Affiliation,
+            Matricule_Employe, Nom_Employe, Prenom_Employe,
+            Nom_Malade, Prenom_Malade, Type_Malade, Nature_Maladie,
+            Montant, Montant_Rembourse, Code_Assurance,
+            Numero_Declaration, Ayant_Droit, file_path
+          ) VALUES (
+            @DateConsultation, @Numero_Contrat, @Numero_Affiliation,
+            @Matricule_Employe, @Nom_Employe, @Prenom_Employe,
+            @Nom_Malade, @Prenom_Malade, @Type_Malade, @Nature_Maladie,
+            @Montant, @Montant_Rembourse, @Code_Assurance,
+            @Numero_Declaration, @Ayant_Droit, @file_path
+          )
+        `);
+
+      return res.json({
+        success: true,
+        message: 'Dossier enregistré avec succès'
+      });
+    }
+
+    throw new Error('Driver de base de données non configuré');
+
+  } catch (error) {
+    console.error('❌ Erreur enregistrement dossier:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erreur lors de l\'enregistrement du dossier'
+    });
+  }
 });
+
 
 // ✅ Route pour lister tous les dossiers
 app.get('/api/dossiers', async (req, res) => {
@@ -699,6 +1145,46 @@ app.get('/api/dossiers', async (req, res) => {
     console.error("❌ Erreur lecture dossiers:", err);
     res.status(500).json({ error: 'Erreur lors de la récupération des dossiers' });
   }
+});
+/* =========================================================
+   🔄 Mise à jour du statut d'un dossier
+========================================================= */
+app.patch('/api/dossiers/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const validStatus = ['En cours', 'Transmis','Remboursé', 'Rejeté'];
+
+    if (!status || !validStatus.includes(status)) {
+      return res.status(400).json({ success: false, error: 'Statut invalide ou manquant.' });
+    }
+
+    let changes = 0;
+
+    if (useMssql) {
+      const pool = await getMssqlPool();
+      const result = await pool.request()
+        .input('id', sqlsrv.Int, id)
+        .input('status', sqlsrv.NVarChar(50), status)
+        .query('UPDATE dbo.Dossiers SET Status = @status WHERE Id = @id');
+      
+      changes = result.rowsAffected[0];
+
+    } else if (useSqlite) {
+      const info = db.prepare('UPDATE Dossiers SET Status = ? WHERE Id = ?').run(status, id);
+      changes = info.changes;
+    }
+
+    if (changes === 0) {
+      return res.status(404).json({ success: false, error: 'Dossier introuvable.' });
+    }
+
+    res.json({ success: true, message: `Le statut du dossier ${id} a été mis à jour à "${status}".` });
+
+  } catch (e) {
+    console.error(`❌ Erreur /api/dossiers/${req.params.id}/status :`, e);
+    res.status(500).json({ success: false, error: 'Erreur interne du serveur.', details: e.message });
+  }
 });
 
 /* =========================================================
@@ -733,45 +1219,8 @@ app.get('/documents', async (_req, res) => {
   }
 });
 
-/* =========================================================
-   🤖 Gemini OCR (optionnel)
-========================================================= */
-if (HAS_GEMINI) {
-  const ocrUpload = multer({ storage });
-  app.post('/api/ocr/gemini', ocrUpload.single('image'), async (req, res) => {
-    try {
-      if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu.' });
 
-      const prompt = `
-Analyse ce document et renvoie UNIQUEMENT du JSON strict :
-{
-  "Numero_Contrat": "", "Numero_Affiliation": "", "Matricule_Ste": "",
-  "Nom_Prenom_Assure": "", "Type_Declaration": "Medical|Dentaire|Optique",
-  "Total_Frais_Engages": "", "Date_Consultation": "YYYY-MM-DD",
-  "Nom_Prenom_Malade": "", "Age_Malade": "", "Lien_Parente": "Lui-meme|Conjoint|Enfants",
-  "Nature_Maladie": "", "Numero_Declaration": ""
-}
-Règles :
-- "Numero_Declaration" = numéro de dossier/de déclaration imprimé (souvent **près du titre "DECLARATION DE MALADIE"** en haut à droite, ex. 8 chiffres).
-- Si un champ est introuvable → laisse vide.
-- "status" = "ok" si tous les champs clés sont présents, sinon "incomplet".
-Ne renvoie que le JSON.
-`;
-      const base64 = await fs.readFile(req.file.path, { encoding: 'base64' });
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent([{ text: prompt }, { inlineData: { data: base64, mimeType: req.file.mimetype } }]);
-      const text = result.response.text();
-      const s = text.indexOf('{'), e = text.lastIndexOf('}');
-      const jsonString = (s !== -1 && e !== -1 && e > s) ? text.slice(s, e+1) : '{}';
-      res.json(JSON.parse(jsonString));
-    } catch (error) {
-      console.error("❌ Erreur OCR Gemini:", error);
-      res.status(500).json({ error: "Erreur Gemini lors de l'extraction OCR" });
-    }
-  });
-} else {
-  app.post('/api/ocr/gemini', (_req, res) => res.status(503).json({ error: "OCR indisponible (GEMINI_API_KEY manquante)" }));
-}
+
 
 /* =========================================================
    📊 Import Excel Employés (1 feuille)
@@ -1287,6 +1736,7 @@ app.get('/api/dossiers/search', async (req, res) => {
           D.Matricule_Employe,
           CAST(D.Montant AS DECIMAL(18,2)) AS Montant,
           D.Numero_Declaration,
+           D.file_path, 
           B.filename AS fichier
         FROM dbo.Dossiers D
         LEFT JOIN dbo.Bordereaux_Dossiers BD
@@ -1326,6 +1776,7 @@ app.get('/api/dossiers/search', async (req, res) => {
           BD.Matricule_Employe,
           CAST(BD.Montant AS DECIMAL(18,2)) AS Montant,
           BD.Numero_Declaration,
+           D.file_path, 
           B.filename AS fichier
         FROM dbo.Bordereaux_Dossiers BD
         JOIN dbo.Bordereaux B ON B.Id = BD.BordereauId
@@ -1447,6 +1898,7 @@ app.get('/api/dossiers/by-matricule/:mat', async (req, res) => {
             D.Matricule_Employe,
             CAST(D.Montant AS DECIMAL(18,2)) AS Montant,
             D.Numero_Declaration,
+             D.file_path,
             B.filename AS fichier
           FROM dbo.Dossiers D
           LEFT JOIN dbo.Bordereaux_Dossiers BD

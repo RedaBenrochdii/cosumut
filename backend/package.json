@@ -2,7 +2,9 @@
   "name": "cosumutuel-backend",
   "version": "1.0.0",
   "main": "server.js",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
@@ -14,7 +16,6 @@
     "lint": "echo \"(eslint backend optionnel)\" && exit 0"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.2.0",
     "cors": "^2.8.5",
@@ -37,8 +38,12 @@
   },
   "bin": "server.js",
   "pkg": {
-    "scripts": ["server.js"],
-    "targets": ["node18-win-x64"],
+    "scripts": [
+      "server.js"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
     "outputPath": "dist"
   }
 }

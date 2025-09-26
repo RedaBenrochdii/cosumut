@@ -18,8 +18,28 @@
   --success-color: #28a745;
   --danger-color: #dc3545;
   --warning-color: #ffc107;
+  --info-color: #17a2b8;
   --shadow-light: rgba(0, 0, 0, 0.1);
   --shadow-dark: rgba(0, 0, 0, 0.4);
+  --light-blue: #e8f4fd;
+  
+  /* Espacements */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Rayons de bordure */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Transitions */
+  --transition-fast: all 0.15s ease;
+  --transition-normal: all 0.3s ease;
 }
 
 /* Styles pour le mode sombre (basés sur body.dark-mode) */
@@ -32,6 +52,12 @@ body.dark-mode .card {
   background-color: var(--card-bg-dark);
   box-shadow: 0 4px 15px var(--shadow-dark);
   border: 1px solid var(--border-dark);
+}
+
+body.dark-mode .addUserSection,
+body.dark-mode .userListSection {
+  background-color: var(--card-bg-dark);
+  border-color: var(--border-dark);
 }
 
 body.dark-mode .inputField,
@@ -59,6 +85,24 @@ body.dark-mode .list-item.selected {
   color: var(--white);
 }
 
+body.dark-mode .userTable {
+  background-color: #3a3a3a;
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .userTable th {
+  background: linear-gradient(135deg, #1f2937, #374151);
+}
+
+body.dark-mode .userTable td {
+  border-bottom-color: var(--border-dark);
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .userTable tr:hover td {
+  background: #4b5563;
+}
+
 /* Conteneur principal */
 .container {
   display: flex;
@@ -66,25 +110,44 @@ body.dark-mode .list-item.selected {
   align-items: center;
   padding: 30px 20px;
   min-height: 100vh;
-  background-color: var(--light-gray);
+  background: linear-gradient(135deg, var(--light-gray) 0%, var(--light-blue) 100%);
   color: var(--text-color-light);
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Titre principal avec style professionnel */
 .title {
-  font-size: 2.8rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
   color: var(--primary-blue);
-  margin-bottom: 30px;
-  font-weight: 700;
   text-align: center;
+  margin-bottom: var(--spacing-2xl);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  text-shadow: 0 2px 4px rgba(0, 86, 179, 0.1);
+  position: relative;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-blue), var(--accent-yellow));
+  border-radius: 2px;
 }
 
 .subtitle {
-  font-size: 1.8rem;
-  color: var(--dark-gray);
-  margin-bottom: 20px;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color-light);
+  margin-bottom: var(--spacing-xl);
   text-align: center;
+  letter-spacing: -0.015em;
 }
 
 body.dark-mode .subtitle {
@@ -93,36 +156,57 @@ body.dark-mode .subtitle {
 
 /* Styles de carte pour les sections */
 .card {
-  background-color: var(--card-bg-light);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px var(--shadow-light);
-  margin-bottom: 30px;
+  background: var(--card-bg-light);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
   width: 100%;
   max-width: 800px; /* Largeur maximale pour les cartes */
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: 0 10px 25px var(--shadow-light);
   border: 1px solid var(--border-light);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-blue), var(--accent-yellow));
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px var(--shadow-light);
 }
 
 .card legend {
-  font-size: 1.6rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--primary-blue);
-  padding: 0 10px;
-  margin-bottom: 20px;
   text-align: center;
+  padding: 0 var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  position: relative;
 }
 
 /* Groupes de formulaire */
 .formGroup {
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-lg);
+  position: relative;
 }
 
 .formGroup label {
   display: block;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
   color: var(--text-color-light);
+  font-size: 0.95rem;
+  letter-spacing: 0.025em;
 }
 
 body.dark-mode .formGroup label {
@@ -133,123 +217,154 @@ body.dark-mode .formGroup label {
 .inputField,
 .selectField {
   width: 100%;
-  padding: 12px 15px;
-  border: 1px solid var(--medium-gray);
-  border-radius: 8px;
-  box-sizing: border-box;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
   font-size: 1rem;
+  font-weight: 500;
   color: var(--text-color-light);
-  background-color: var(--white);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  background: var(--white);
+  transition: var(--transition-fast);
+  box-sizing: border-box;
 }
 
 .inputField:focus,
 .selectField:focus {
   outline: none;
   border-color: var(--primary-blue);
-  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Boutons */
 .button {
-  padding: 12px 25px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-decoration: none;
+  letter-spacing: 0.025em;
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
 }
 
 .primaryButton {
-  background-color: var(--primary-blue);
+  background: linear-gradient(135deg, var(--primary-blue), #0066cc);
   color: var(--white);
-  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 86, 179, 0.1);
 }
 
 .primaryButton:hover {
-  background-color: #004085;
+  background: linear-gradient(135deg, #0066cc, var(--primary-blue));
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 86, 179, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 86, 179, 0.1);
 }
 
-.submitButton { /* Pour les boutons de soumission dans les formulaires */
-  background-color: var(--success-color);
+.submitButton { 
+  background: linear-gradient(135deg, var(--success-color), #32cd32);
   color: var(--white);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-  width: 100%; /* Prend toute la largeur */
-  margin-top: 15px;
+  width: 100%;
+  margin-top: var(--spacing-lg);
+  box-shadow: 0 4px 6px rgba(40, 167, 69, 0.1);
 }
 
 .submitButton:hover {
-  background-color: #218838;
+  background: linear-gradient(135deg, #32cd32, var(--success-color));
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+  box-shadow: 0 10px 25px rgba(40, 167, 69, 0.1);
 }
 
 .dangerButton {
-  background-color: var(--danger-color);
+  background: linear-gradient(135deg, var(--danger-color), #ff4757);
   color: var(--white);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 4px 6px rgba(220, 53, 69, 0.1);
 }
 
 .dangerButton:hover {
-  background-color: #c82333;
+  background: linear-gradient(135deg, #ff4757, var(--danger-color));
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+  box-shadow: 0 10px 25px rgba(220, 53, 69, 0.1);
 }
 
 .button:disabled {
-  background-color: var(--medium-gray);
+  background: var(--medium-gray);
   color: #666;
   cursor: not-allowed;
-  box-shadow: none;
   transform: none;
+  box-shadow: none;
 }
 
 /* Messages d'alerte */
 .alert {
-  padding: 12px 15px;
-  border-radius: 8px;
-  font-weight: 500;
-  margin-top: 15px;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  margin: var(--spacing-lg) 0;
   text-align: center;
+  border-left: 4px solid;
+  position: relative;
+  backdrop-filter: blur(10px);
 }
 
 .alertSuccess {
-  background-color: #d4edda;
+  background: rgba(40, 167, 69, 0.1);
   color: #155724;
-  border: 1px solid #c3e6cb;
+  border-left-color: var(--success-color);
+  border: 1px solid rgba(40, 167, 69, 0.2);
 }
 
 .alertWarning {
-  background-color: #fff3cd;
+  background: rgba(255, 193, 7, 0.1);
   color: #856404;
-  border: 1px solid #ffeeba;
+  border-left-color: var(--warning-color);
+  border: 1px solid rgba(255, 193, 7, 0.2);
 }
 
 .alertDanger {
-  background-color: #f8d7da;
+  background: rgba(220, 53, 69, 0.1);
   color: #721c24;
-  border: 1px solid #f5c6cb;
+  border-left-color: var(--danger-color);
+  border: 1px solid rgba(220, 53, 69, 0.2);
 }
 
 /* Liste de recherche d'employés */
 .employeeList {
-  max-height: 250px;
+  max-height: 300px;
   overflow-y: auto;
-  padding: 0;
-  list-style: none;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
-  margin-top: 15px;
-  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  background: var(--white);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  margin-top: var(--spacing-lg);
+  transition: var(--transition-normal);
+  list-style: none;
+  padding: 0;
+}
+
+.employeeList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.employeeList::-webkit-scrollbar-track {
+  background: var(--light-gray);
+  border-radius: 4px;
+}
+
+.employeeList::-webkit-scrollbar-thumb {
+  background: var(--medium-gray);
+  border-radius: 4px;
+}
+
+.employeeList::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-blue);
 }
 
 body.dark-mode .employeeList {
@@ -257,46 +372,361 @@ body.dark-mode .employeeList {
   border-color: var(--border-dark);
 }
 
-.list-item {
-  padding: 12px 15px;
+.listItem {
+  padding: var(--spacing-lg);
   cursor: pointer;
-  border-bottom: 1px solid var(--medium-gray);
-  transition: background-color 0.2s ease;
+  border-bottom: 1px solid var(--border-light);
+  transition: var(--transition-fast);
+  font-weight: 500;
   color: var(--text-color-light);
+  position: relative;
 }
 
-body.dark-mode .list-item {
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.listItem:hover {
+  background: var(--light-blue);
+  color: var(--primary-blue);
+  padding-left: calc(var(--spacing-lg) + 8px);
+}
+
+.listItem.selected {
+  background: linear-gradient(135deg, var(--primary-blue), #0066cc);
+  color: var(--white);
+  font-weight: 700;
+  box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.listItem.selected::before {
+  content: '✓';
+  position: absolute;
+  right: var(--spacing-lg);
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--accent-yellow);
+}
+
+body.dark-mode .listItem {
   border-bottom-color: var(--border-dark);
   color: var(--text-color-dark);
 }
 
-.list-item:last-child {
-  border-bottom: none;
-}
-
-.list-item:hover {
-  background-color: #f0f0f0;
-}
-
-.list-item.selected {
-  background-color: #e0f2fe; /* Bleu clair pour sélection */
-  font-weight: 600;
-  color: var(--primary-blue);
+body.dark-mode .listItem:hover {
+  background-color: #4a4a4a;
 }
 
 /* Note informative */
 .note {
   font-size: 0.9rem;
-  color: #666;
-  margin-top: 15px;
-  line-height: 1.5;
+  color: var(--dark-gray);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--light-gray);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--info-color);
+  font-style: italic;
 }
 
 body.dark-mode .note {
   color: #bbb;
+  background-color: #4a4a4a;
+}
+
+/* ========================================
+   SECTION UTILISATEURS AMÉLIORÉE
+======================================== */
+
+/* Titre centré avec espacement */
+.userSectionTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-blue);
+  text-align: center;
+  margin: var(--spacing-2xl) 0 var(--spacing-xl) 0;
+  position: relative;
+  letter-spacing: -0.025em;
+}
+
+.userSectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-blue), var(--accent-yellow));
+  border-radius: 2px;
+}
+
+/* Section d'ajout d'utilisateur élargie */
+.addUserSection {
+  background: var(--card-bg-light);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  width: 100%;
+  max-width: 1000px; /* Plus large que les autres cartes */
+  box-shadow: 0 10px 25px var(--shadow-light);
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-normal);
+}
+
+.addUserSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--success-color), #32cd32);
+}
+
+.addUserSection:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px var(--shadow-light);
+}
+
+.addUserSection legend {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--success-color);
+  text-align: center;
+  padding: 0 var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Grille améliorée pour le formulaire d'ajout */
+.userFormGrid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.5fr auto;
+  gap: var(--spacing-lg);
+  align-items: end;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Champs de formulaire utilisateur */
+.userFormField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.userFormField label {
+  font-weight: 600;
+  color: var(--text-color-light);
+  font-size: 0.95rem;
+  letter-spacing: 0.025em;
+}
+
+.userFormField input,
+.userFormField select {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-color-light);
+  background: var(--white);
+  transition: var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.userFormField input:focus,
+.userFormField select:focus {
+  outline: none;
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Bouton créer utilisateur */
+.createUserButton {
+  padding: var(--spacing-md) var(--spacing-2xl);
+  background: linear-gradient(135deg, var(--success-color), #32cd32);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.createUserButton:hover {
+  background: linear-gradient(135deg, #32cd32, var(--success-color));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(40, 167, 69, 0.1);
+}
+
+/* Section liste des utilisateurs */
+.userListSection {
+  background: var(--card-bg-light);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  width: 100%;
+  max-width: 1000px; /* Même largeur que l'ajout */
+  box-shadow: 0 10px 25px var(--shadow-light);
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-normal);
+}
+
+.userListSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--info-color), #60a5fa);
+}
+
+.userListSection:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px var(--shadow-light);
+}
+
+.userListSection legend {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--info-color);
+  text-align: center;
+  padding: 0 var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Tableau utilisateurs amélioré */
+.userTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 6px var(--shadow-light);
+  background: var(--white);
+  margin-top: var(--spacing-lg);
+}
+
+.userTable th {
+  background: linear-gradient(135deg, var(--info-color), #60a5fa);
+  color: var(--white);
+  font-weight: 700;
+  padding: var(--spacing-lg);
+  text-align: left;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.userTable td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-light);
+  transition: var(--transition-fast);
+  vertical-align: middle;
+}
+
+.userTable tr:hover td {
+  background: var(--light-blue);
+}
+
+.userTable tr:last-child td {
+  border-bottom: none;
+}
+
+/* Style pour le sélecteur de rôle */
+.roleSelector {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  border: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.roleSelector.agent {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.roleSelector.admin {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.roleSelector:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Bouton supprimer utilisateur */
+.deleteUserButton {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, var(--danger-color), #ff4757);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.deleteUserButton:hover {
+  background: linear-gradient(135deg, #ff4757, var(--danger-color));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+}
+
+/* Message d'état utilisateurs */
+.userMessage {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--dark-gray);
+  font-style: italic;
+  background: var(--light-gray);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-lg) 0;
+}
+
+/* Espacement général pour la section utilisateurs */
+.usersContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
 }
 
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .userFormGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .userFormGrid > div:nth-child(4) {
+    grid-column: span 2;
+    justify-self: center;
+  }
+  
+  .addUserSection,
+  .userListSection {
+    max-width: 95%;
+  }
+}
+
 @media (max-width: 768px) {
   .title {
     font-size: 2rem;
@@ -305,7 +735,7 @@ body.dark-mode .note {
     font-size: 1.5rem;
   }
   .card {
-    padding: 20px;
+    padding: var(--spacing-lg);
   }
   .card legend {
     font-size: 1.4rem;
@@ -313,6 +743,25 @@ body.dark-mode .note {
   .button {
     padding: 10px 20px;
     font-size: 0.95rem;
+  }
+  
+  .userFormGrid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .userFormGrid > div:nth-child(4) {
+    grid-column: span 1;
+    justify-self: stretch;
+  }
+  
+  .userSectionTitle {
+    font-size: 1.6rem;
+  }
+  
+  .addUserSection,
+  .userListSection {
+    padding: var(--spacing-lg);
   }
 }
 
@@ -324,7 +773,7 @@ body.dark-mode .note {
     font-size: 1.3rem;
   }
   .card {
-    padding: 15px;
+    padding: var(--spacing-md);
   }
   .card legend {
     font-size: 1.2rem;
@@ -335,10 +784,65 @@ body.dark-mode .note {
     font-size: 0.9rem;
   }
   .button {
-    width: 100%; /* Full width buttons on small screens */
+    width: 100%;
     margin-top: 10px;
   }
   .submitButton {
     margin-top: 10px;
   }
+  
+  .userTable th,
+  .userTable td {
+    padding: var(--spacing-sm);
+    font-size: 0.85rem;
+  }
+}
+
+/* Animations professionnelles */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card,
+.addUserSection,
+.userListSection {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.alert {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.button:focus-visible,
+.inputField:focus-visible,
+.selectField:focus-visible {
+  outline: 2px solid var(--accent-yellow);
+  outline-offset: 2px;
 }

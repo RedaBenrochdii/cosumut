@@ -140,7 +140,8 @@ body.dark-mode .subSectionTitle {
 
 .card {
   background-color: var(--card-bg-light);
-  padding: 30px;
+  padding: 7px;
+  margin-top: 20px;
   border-radius: 12px;
   box-shadow: 0 6px 20px var(--shadow-light);
   margin-bottom: 30px;

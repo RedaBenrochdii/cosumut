@@ -1,4 +1,3 @@
-// src/pages/BordereauPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import styles from '../styles/BordereauPage.module.css';
@@ -17,7 +16,8 @@ export default function BordereauPage() {
   const [historique, setHistorique] = useState([]);
   const [filteredHistorique, setFilteredHistorique] = useState([]);
   const [dossiersEmploye, setDossiersEmploye] = useState([]);
-  const [allDossiersBordereaux, setAllDossiersBordereaux] = useState([]);
+  // 🔄 SEULE MODIFICATION : Remplacé allDossiersBordereaux par allDossiersSqlServer
+  const [allDossiersSqlServer, setAllDossiersSqlServer] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastFilename, setLastFilename] = useState('');
@@ -27,7 +27,7 @@ export default function BordereauPage() {
   // 🔎 Filtres avancés (panneau)
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [fMatricule, setFMatricule] = useState('');
-  const [fType, setFType] = useState(''); // Medical, Dentaire, Optique
+  const [fType, setFType] = useState('');
   const [fNature, setFNature] = useState('');
   const [fDateFrom, setFDateFrom] = useState('');
   const [fDateTo, setFDateTo] = useState('');
@@ -62,7 +62,7 @@ export default function BordereauPage() {
 
   // 📥 charge + écoute les mises à jour
   useEffect(() => {
-    reloadFormList(); // initial
+    reloadFormList();
     const onLocalUpdate = () => reloadFormList();
     const onStorage = (e) => { if (e.key === 'formList') reloadFormList(); };
     const onVisible = () => { if (!document.hidden) reloadFormList(); };
@@ -94,13 +94,29 @@ export default function BordereauPage() {
       });
   }, []);
 
-  // Tous les dossiers (legacy JSON) pour graphe global
+  // 🆕 MODIFICATION : Chargement depuis SQL Server au lieu de JSON
   useEffect(() => {
-    axios.get('http://localhost:4000/api/dossiers-bordereaux')
-      .then(res => setAllDossiersBordereaux(Array.isArray(res.data) ? res.data : []))
+    // Charge tous les dossiers de l'année courante depuis SQL Server
+    const currentYear = new Date().getFullYear();
+    const params = {
+      dateFrom: `${currentYear}-01-01`,
+      dateTo: `${currentYear}-12-31`
+    };
+
+    axios.get('http://localhost:4000/api/dossiers/search', { params })
+      .then(res => {
+        const dossiers = Array.isArray(res.data) ? res.data : [];
+        // Compatibilité avec l'ancien format pour le graphique
+        const formattedData = dossiers.map(d => ({
+          ...d,
+          Total_Frais_Engages: d.Montant || d.Total_Frais_Engages || 0,
+          DateConsultation: d.DateConsultation,
+        }));
+        setAllDossiersSqlServer(formattedData);
+      })
       .catch(() => {
-        setAllDossiersBordereaux([]);
-        setMessage('Erreur lors du chargement de la consommation globale.');
+        setAllDossiersSqlServer([]);
+        setMessage('Erreur lors du chargement de la consommation globale depuis SQL Server.');
       });
   }, []);
 
@@ -114,7 +130,6 @@ export default function BordereauPage() {
   useEffect(() => {
     const s = searchHistorique.trim();
 
-    // Filtrer la liste des fichiers (UI)
     if (!s) {
       setFilteredHistorique(historique);
     } else {
@@ -127,7 +142,6 @@ export default function BordereauPage() {
       );
     }
 
-    // Debounce 300ms pour requête DB
     if (dbSearchTimer.current) clearTimeout(dbSearchTimer.current);
     dbSearchTimer.current = setTimeout(() => {
       const params = {};
@@ -140,7 +154,6 @@ export default function BordereauPage() {
       if (fMontantMin) params.montantMin = fMontantMin;
       if (fMontantMax) params.montantMax = fMontantMax;
 
-      // si aucun critère => on n’interroge pas
       if (Object.keys(params).length === 0) { setDossiersEmploye([]); return; }
 
       axios.get('http://localhost:4000/api/dossiers/search', { params })
@@ -153,7 +166,7 @@ export default function BordereauPage() {
     };
   }, [searchHistorique, historique, fMatricule, fType, fNature, fDateFrom, fDateTo, fMontantMin, fMontantMax]);
 
-  // 🔎 Recherche locale sur la liste à exporter (inclut Nature_Maladie)
+  // 🔎 Recherche locale sur la liste à exporter
   useEffect(() => {
     if (!searchDossiers) {
       setFilteredDossiers(dossiers);
@@ -171,7 +184,6 @@ export default function BordereauPage() {
     }
   }, [searchDossiers, dossiers]);
 
-  // --- Regroupe la consommation par date ---
   function computeConsumptionByDate(ds) {
     const map = {};
     ds.forEach(d => {
@@ -270,11 +282,42 @@ export default function BordereauPage() {
   };
 
   const handleEdit = (item, idx) => {
-    setMessage(`Fonctionnalité d'édition à implémenter pour le dossier : ${item.Nom_Malade} (index ${idx})`);
+    setMessage(`Mode édition activé pour le dossier : ${item.Nom_Malade || 'N/A'} (index ${idx})`);
+  };
+
+  // NOUVELLE FONCTION : Mise à jour des dossiers en localStorage
+  const handleUpdate = (updatedItem, idx) => {
+    const newData = [...filteredDossiers];
+    newData[idx] = updatedItem;
+    setFilteredDossiers(newData);
+    setDossiers(newData);
+    localStorage.setItem('formList', JSON.stringify(newData));
+    setMessage('✅ Dossier mis à jour avec succès !');
+  };
+
+  // FONCTION : Gestion des changements de statut (pour les dossiers de la DB)
+  const handleStatusChange = async (dossierId, newStatus) => {
+    try {
+      setMessage(`Mise à jour du statut pour le dossier ${dossierId}...`);
+      const res = await axios.patch(`http://localhost:4000/api/dossiers/${dossierId}/status`, {
+        status: newStatus,
+      });
+
+      if (res.data.success) {
+        setDossiersEmploye(prevDossiers => 
+          prevDossiers.map(d => 
+            d.Id === dossierId ? { ...d, Status: newStatus } : d
+          )
+        );
+        setMessage(`✅ ${res.data.message}`);
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Erreur lors de la mise à jour du statut.';
+      setMessage(`❌ ${errorMsg}`);
+    }
   };
 
   const applyAdvancedFilters = () => {
-    // force un rafraîchissement immédiat sans attendre le debounce
     if (dbSearchTimer.current) clearTimeout(dbSearchTimer.current);
     const params = {};
     if (searchHistorique.trim()) params.q = searchHistorique.trim();
@@ -333,23 +376,23 @@ export default function BordereauPage() {
             </ul>
           </div>
         </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button className={`${styles.button} ${styles.primaryButton}`} onClick={exportBordereau} disabled={loading || filteredDossiers.length === 0}>
-              {loading ? 'Exportation...' : 'Exporter le Bordereau'}
-            </button>
-            <button
-              className={`${styles.button} ${styles.secondaryButton}`}
-              onClick={() => {
-                window.open(
-                  `https://mail.google.com/mail/?view=cm&fs=1&to=${TO_EMAIL}&su=${MAIL_SUBJECT}&body=${MAIL_BODY}`,
-                  '_blank'
-                );
-              }}
-              disabled={filteredDossiers.length === 0}
-            >
-              Envoyer à Wafa
-            </button>
-          </div>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button className={`${styles.button} ${styles.primaryButton}`} onClick={exportBordereau} disabled={loading || filteredDossiers.length === 0}>
+            {loading ? 'Exportation...' : 'Exporter le Bordereau'}
+          </button>
+          <button
+            className={`${styles.button} ${styles.secondaryButton}`}
+            onClick={() => {
+              window.open(
+                `https://mail.google.com/mail/?view=cm&fs=1&to=${TO_EMAIL}&su=${MAIL_SUBJECT}&body=${MAIL_BODY}`,
+                '_blank'
+              );
+            }}
+            disabled={filteredDossiers.length === 0}
+          >
+            Envoyer à Wafa
+          </button>
+        </div>
       </fieldset>
 
       <fieldset className={styles.card}>
@@ -370,18 +413,24 @@ export default function BordereauPage() {
           onDelete={handleDelete}
           onDeleteAll={handleDeleteAll}
           onEdit={handleEdit}
+          onUpdate={handleUpdate}
+          showBordereau={false}
         />
       </fieldset>
 
+      {/* 🆕 SEUL CHANGEMENT : Titre et données depuis SQL Server */}
       <section className={styles.chartSection}>
-        <h2 className={styles.sectionTitle}>Consommation globale (tous les bordereaux)</h2>
-        <DailyConsumptionChart data={computeConsumptionByDate(allDossiersBordereaux)} />
+<h2 className={styles.sectionTitle}>
+  Consommation globale
+</h2>
+
+        <DailyConsumptionChart data={computeConsumptionByDate(allDossiersSqlServer)} />
       </section>
 
       {dossiersEmploye.length > 0 && (
         <section className={styles.chartSection}>
           <h2 className={styles.sectionTitle}>
-            Résultats (DB){searchHistorique.trim() ? <> pour « <span style={{ color: 'var(--primary-blue)' }}>{searchHistorique}</span> »</> : null}
+            Résultats {searchHistorique.trim() ? <> pour « <span style={{ color: 'var(--primary-blue)' }}>{searchHistorique}</span> »</> : null}
           </h2>
           <DailyConsumptionChart data={computeConsumptionByDate(dossiersEmploye)} />
         </section>
@@ -390,7 +439,6 @@ export default function BordereauPage() {
       <fieldset className={styles.card}>
         <legend>Historique des Bordereaux</legend>
 
-        {/* Barre de recherche + icône filtre */}
         <div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ flex: 1 }}>
             <label htmlFor="searchHistorique">Rechercher (fichier, matricule, nature, etc.) :</label>
@@ -420,14 +468,12 @@ export default function BordereauPage() {
               cursor: 'pointer'
             }}
           >
-            {/* Icône entonnoir (inline SVG) */}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6l-6.2 8.27V19a1 1 0 0 1-1.45.9l-3-1.5A1 1 0 0 1 10 17v-2.13L3.2 5.6A1 1 0 0 1 3 5z"/>
             </svg>
           </button>
         </div>
 
-        {/* Panneau de filtres avancés */}
         {isFiltersOpen && (
           <div
             style={{
@@ -555,38 +601,11 @@ export default function BordereauPage() {
 
         {dossiersEmploye.length > 0 && (
           <div className={styles.tableContainer}>
-            <h3 className={styles.subSectionTitle}>Dossiers trouvés (base de données) :</h3>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Nom Employé</th>
-                  <th>Nom Malade</th>
-                  <th>Type</th>
-                  <th>Nature</th>
-                  <th>Montant</th>
-                  <th>Bordereau</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dossiersEmploye.map((d, i) => (
-                  <tr key={i}>
-                    {/* 🛠️ Correction: Formatage de la date */}
-                    <td>{d.DateConsultation ? new Date(d.DateConsultation).toLocaleDateString() : '—'}</td>
-                    <td>{[d.Nom_Employe, d.Prenom_Employe].filter(Boolean).join(' ') || '—'}</td>
-                    <td>{[d.Nom_Malade, d.Prenom_Malade].filter(Boolean).join(' ') || '—'}</td>
-                    <td>{d.Type_Malade || '—'}</td>
-                    <td>{d.Nature_Maladie || '—'}</td>
-                    <td>{(d.Montant ?? '') !== '' ? Number(d.Montant).toFixed(2) : '—'}</td>
-                    <td>
-                      {d.fichier
-                        ? <a href={`http://localhost:4000/bordereaux/${d.fichier}.xlsx`} target="_blank" rel="noreferrer">{d.fichier}</a>
-                        : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h3 className={styles.subSectionTitle}>Dossiers trouvés :</h3>
+            <DataTable 
+              data={dossiersEmploye} 
+              onStatusChange={handleStatusChange} 
+            />
           </div>
         )}
       </fieldset>
